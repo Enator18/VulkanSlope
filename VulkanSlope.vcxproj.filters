@@ -21,9 +21,30 @@
     <ClCompile Include="slope_game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="render_core.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="render_device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="render_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="slope_game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render_core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render_device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,6 +2,8 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+
+#include "render_core.h"
 class SlopeGame
 {
 public:
@@ -12,6 +14,9 @@ public:
 private:
 	GLFWwindow* window;
 	VkInstance instance;
+	VkSurfaceKHR surface;
+
+	Renderer renderer;
 
 	int width = 800;
 	int height = 600;

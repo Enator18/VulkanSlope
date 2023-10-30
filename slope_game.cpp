@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "slope_game.h"
+#include "render_core.h"
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -52,6 +53,13 @@ void SlopeGame::init()
 	{
 		throw std::runtime_error("Failed to create instance");
 	}
+
+	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create window surface!");
+	}
+
+	renderer.init(&instance);
 }
 
 bool SlopeGame::tick()
