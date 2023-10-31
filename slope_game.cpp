@@ -59,7 +59,7 @@ void SlopeGame::init()
 		throw std::runtime_error("failed to create window surface!");
 	}
 
-	renderer.init(&instance);
+	renderer.init(&instance, &surface);
 }
 
 bool SlopeGame::tick()
@@ -70,5 +70,11 @@ bool SlopeGame::tick()
 
 void SlopeGame::cleanup()
 {
+	renderer.cleanup();
 
+	vkDestroySurfaceKHR(instance, surface, nullptr);
+	vkDestroyInstance(instance, nullptr);
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
 }
