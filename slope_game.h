@@ -15,9 +15,12 @@ private:
 	GLFWwindow* window;
 	VkInstance instance;
 	VkSurfaceKHR surface;
+	VkDebugUtilsMessengerEXT messenger;
 
 	Renderer renderer;
 
 	int width = 800;
 	int height = 600;
+
+	void initRenderer();
 };

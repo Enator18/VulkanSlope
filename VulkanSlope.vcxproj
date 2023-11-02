@@ -145,16 +145,17 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="render_core.cpp" />
-    <ClCompile Include="render_device.cpp" />
     <ClCompile Include="render_utils.cpp" />
     <ClCompile Include="slope_game.cpp" />
+    <ClCompile Include="VkBootstrap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="render_core.h" />
-    <ClInclude Include="render_device.h" />
     <ClInclude Include="render_types.h" />
     <ClInclude Include="render_utils.h" />
     <ClInclude Include="slope_game.h" />
+    <ClInclude Include="VkBootstrap.h" />
+    <ClInclude Include="VkBootstrapDispatch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
