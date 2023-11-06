@@ -13,14 +13,11 @@ public:
 	void cleanup();
 private:
 	GLFWwindow* window;
-	VkInstance instance;
+	vkb::Instance vkbInstance;
 	VkSurfaceKHR surface;
-	VkDebugUtilsMessengerEXT messenger;
 
 	Renderer renderer;
 
 	int width = 800;
 	int height = 600;
-
-	void initRenderer();
 };

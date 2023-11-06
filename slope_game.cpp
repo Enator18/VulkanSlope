@@ -24,20 +24,21 @@ void SlopeGame::init()
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	window = glfwCreateWindow(800, 600, "Slope", nullptr, nullptr);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	window = glfwCreateWindow(width, height, "Slope", nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 
-	initRenderer();
-}
+#ifdef NDEBUG
+	bool validation = false;
+#else
+	bool validation = true;
+#endif
 
-void SlopeGame::initRenderer()
-{
 	vkb::InstanceBuilder builder;
 
 	auto instRet = builder.set_app_name("Slope")
-		.request_validation_layers(true)
+		.request_validation_layers(validation)
 		.require_api_version(1, 1, 0)
 		.use_default_debug_messenger()
 		.build();
@@ -47,32 +48,14 @@ void SlopeGame::initRenderer()
 		throw std::runtime_error("Failed to create instance");
 	}
 
-	vkb::Instance vkbInstance = instRet.value();
-	instance = vkbInstance.instance;
-	messenger = vkbInstance.debug_messenger;
+	vkbInstance = instRet.value();
 
-	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
+	if (glfwCreateWindowSurface(vkbInstance, window, nullptr, &surface) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create window surface!");
 	}
 
-	vkb::PhysicalDeviceSelector selector{ vkbInstance };
-
-	auto devRet = selector.set_surface(surface)
-		.set_minimum_version(1, 1)
-		.prefer_gpu_device_type()
-		.select();
-	vkb::PhysicalDevice vkbPhysicalDevice = devRet.value();
-
-	VkPhysicalDevice physicalDevice = vkbPhysicalDevice.physical_device;
-
-	vkb::DeviceBuilder deviceBuilder{ vkbPhysicalDevice };
-
-	vkb::Device vkbDevice = deviceBuilder.build().value();
-
-	VkDevice device = vkbDevice.device;
-
-	renderer.init(&instance, &surface, physicalDevice, device);
+	renderer.init(vkbInstance, &surface, width, height);
 }
 
 bool SlopeGame::tick()
@@ -85,9 +68,8 @@ void SlopeGame::cleanup()
 {
 	renderer.cleanup();
 
-	vkDestroySurfaceKHR(instance, surface, nullptr);
-	vkb::destroy_debug_utils_messenger(instance, messenger);
-	vkDestroyInstance(instance, nullptr);
+	vkDestroySurfaceKHR(vkbInstance.instance, surface, nullptr);
+	vkDestroyInstance(vkbInstance.instance, nullptr);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
