@@ -16,17 +16,18 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 		.set_minimum_version(1, 1)
 		.prefer_gpu_device_type()
 		.select();
-	vkb::PhysicalDevice vkbPhysicalDevice = devRet.value();
+	physicalDevice = devRet.value();
 
-	physicalDevice = vkbPhysicalDevice.physical_device;
+	vkb::DeviceBuilder deviceBuilder{ physicalDevice };
 
-	vkb::DeviceBuilder deviceBuilder{ vkbPhysicalDevice };
+	device = deviceBuilder.build().value();
 
-	vkb::Device vkbDevice = deviceBuilder.build().value();
+	createSwapchain(width, height);
+};
 
-	device = vkbDevice.device;
-
-	vkb::SwapchainBuilder swapchainBuilder{ vkbPhysicalDevice, vkbDevice, *surface };
+void Renderer::createSwapchain(uint32_t width, uint32_t height)
+{
+	vkb::SwapchainBuilder swapchainBuilder{ physicalDevice, device, *surface };
 
 	vkb::Swapchain vkbSwapchain = swapchainBuilder
 		.use_default_format_selection()
@@ -42,7 +43,7 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	swapchainImageFormat = vkbSwapchain.image_format;
 };
 
-void Renderer::cleanup()
+void Renderer::cleanupSwapchain()
 {
 	for (VkImageView imageView : swapchainImageViews)
 	{
@@ -50,6 +51,17 @@ void Renderer::cleanup()
 	}
 
 	vkDestroySwapchainKHR(device, swapchain, nullptr);
+}
+
+void Renderer::updateSwapchain(uint32_t width, uint32_t height)
+{
+	cleanupSwapchain();
+	createSwapchain(width, height);
+}
+
+void Renderer::cleanup()
+{
+	cleanupSwapchain();
 
 	vkDestroyDevice(device, nullptr);
 	vkb::destroy_debug_utils_messenger(instance, messenger);

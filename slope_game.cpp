@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 #include <stdexcept>
+#include <iostream>
 
 #include "slope_game.h"
 #include "VkBootstrap.h"
@@ -17,6 +18,8 @@ void SlopeGame::onResize(int width, int height)
 {
 	this->width = width;
 	this->height = height;
+	std::cout << "Width: " << width << ", " << "Height: " << height << "\n";
+	renderer.updateSwapchain(width, height);
 }
 
 void SlopeGame::init()
