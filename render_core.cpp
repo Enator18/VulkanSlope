@@ -22,7 +22,12 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 
 	device = deviceBuilder.build().value();
 
+	graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
+	graphicsQueueFamily = device.get_queue_index(vkb::QueueType::graphics).value();
+
 	createSwapchain(width, height);
+
+	initCommands();
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
@@ -59,8 +64,41 @@ void Renderer::updateSwapchain(uint32_t width, uint32_t height)
 	createSwapchain(width, height);
 }
 
+void Renderer::initCommands()
+{
+	VkCommandPoolCreateInfo commandPoolInfo = {};
+	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	commandPoolInfo.pNext = nullptr;
+	commandPoolInfo.queueFamilyIndex = graphicsQueueFamily;
+	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+	if (vkCreateCommandPool(device, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create command pool");
+	}
+
+	VkCommandBufferAllocateInfo cmdAllocInfo = {};
+	cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdAllocInfo.pNext = nullptr;
+	cmdAllocInfo.commandPool = commandPool;
+	cmdAllocInfo.commandBufferCount = 1;
+	cmdAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+	if (vkAllocateCommandBuffers(device, &cmdAllocInfo, nullptr, &commandBuffer) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create command pool");
+	}
+}
+
+void Renderer::drawFrame()
+{
+
+}
+
 void Renderer::cleanup()
 {
+	vkDestroyCommandPool(device, commandPool, nullptr);
+
 	cleanupSwapchain();
 
 	vkDestroyDevice(device, nullptr);

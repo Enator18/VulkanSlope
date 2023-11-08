@@ -64,6 +64,9 @@ void SlopeGame::init()
 bool SlopeGame::tick()
 {
 	glfwPollEvents();
+
+	renderer.drawFrame();
+
 	return !glfwWindowShouldClose(window);
 }
 
