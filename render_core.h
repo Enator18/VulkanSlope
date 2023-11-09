@@ -24,8 +24,10 @@ private:
 	std::vector<VkImageView> swapchainImageViews;
 	VkCommandPool commandPool;
 	VkCommandBuffer commandBuffer;
+	VkRenderPass renderPass;
 
 	void createSwapchain(uint32_t width, uint32_t height);
 	void cleanupSwapchain();
 	void initCommands();
+	void initRenderpass();
 };
