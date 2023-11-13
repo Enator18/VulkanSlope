@@ -11,6 +11,8 @@ public:
 	void drawFrame();
 	void cleanup();
 private:
+	uint32_t width;
+	uint32_t height;
 	VkInstance instance;
 	VkSurfaceKHR* surface;
 	VkDebugUtilsMessengerEXT messenger;
@@ -25,9 +27,14 @@ private:
 	VkCommandPool commandPool;
 	VkCommandBuffer commandBuffer;
 	VkRenderPass renderPass;
+	std::vector<VkFramebuffer> framebuffers;
+
+	VkSemaphore presentSemaphore, renderSemaphore;
+	VkFence renderFence;
 
 	void createSwapchain(uint32_t width, uint32_t height);
 	void cleanupSwapchain();
 	void initCommands();
 	void initRenderpass();
+	void initSyncStructures();
 };

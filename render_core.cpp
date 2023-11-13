@@ -1,7 +1,19 @@
 #include <vulkan/vulkan.h>
+#include <iostream>
 
 #include "render_core.h"
 #include "VkBootstrap.h"
+
+#define VK_CHECK(x)                                                 \
+	do                                                              \
+	{                                                               \
+		VkResult err = x;                                           \
+		if (err)                                                    \
+		{                                                           \
+			std::cout <<"Detected Vulkan error: " << err << std::endl; \
+			abort();                                                \
+		}                                                           \
+	} while (0)
 
 void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t width, uint32_t height)
 {
@@ -30,10 +42,15 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	initCommands();
 
 	initRenderpass();
+
+	initSyncStructures();
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
 {
+	this->width = width;
+	this->height = height;
+
 	vkb::SwapchainBuilder swapchainBuilder{ physicalDevice, device, *surface };
 
 	vkb::Swapchain vkbSwapchain = swapchainBuilder
@@ -139,15 +156,95 @@ void Renderer::initRenderpass()
 	{
 		throw std::runtime_error("Failed to create render pass");
 	}
+
+	VkFramebufferCreateInfo fbInfo = {};
+	fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	fbInfo.pNext = nullptr;
+	fbInfo.renderPass = renderPass;
+	fbInfo.attachmentCount = 1;
+	fbInfo.width = width;
+	fbInfo.height = height;
+	fbInfo.layers = 1;
+
+	const uint32_t swapchainImageCount = swapchainImages.size();
+	framebuffers = std::vector<VkFramebuffer>(swapchainImageCount);
+
+	for (int i = 0; i < swapchainImageCount; i++)
+	{
+		fbInfo.pAttachments = &swapchainImageViews[i];
+		if (vkCreateFramebuffer(device, &fbInfo, nullptr, &framebuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create framebuffer");
+		}
+	}
+}
+
+void Renderer::initSyncStructures()
+{
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceCreateInfo.pNext = nullptr;
+	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	
+	if (vkCreateFence(device, &fenceCreateInfo, nullptr, &renderFence))
+	{
+		throw std::runtime_error("Failed to create fence");
+	}
+
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	semaphoreCreateInfo.pNext = nullptr;
+	semaphoreCreateInfo.flags = 0;
+
+	if (vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderSemaphore) != VK_SUCCESS && vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &presentSemaphore) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create semaphores");
+	}
 }
 
 void Renderer::drawFrame()
 {
+	VK_CHECK(vkWaitForFences(device, 1, &renderFence, true, 1000000000));
+	VK_CHECK(vkResetFences(device, 1, &renderFence));
 
+	uint32_t swapchainImageIndex;
+	VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 1000000000, presentSemaphore, nullptr, &swapchainImageIndex));
+
+	VK_CHECK(vkResetCommandBuffer(commandBuffer, 0));
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = 0;
+	beginInfo.pInheritanceInfo = nullptr;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo));
+
+	VkRenderPassBeginInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = renderPass;
+	renderPassInfo.framebuffer = framebuffers[swapchainImageIndex];
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = { width, height };
+
+	VkClearValue clearValue;
+	clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearValue;
+
+	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void Renderer::cleanup()
 {
+	vkDestroyRenderPass(device, renderPass, nullptr);
+
+	for (VkFramebuffer framebuffer : framebuffers)
+	{
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	}
+
 	vkDestroyCommandPool(device, commandPool, nullptr);
 
 	cleanupSwapchain();
