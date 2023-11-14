@@ -186,7 +186,7 @@ void Renderer::initSyncStructures()
 	fenceCreateInfo.pNext = nullptr;
 	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 	
-	if (vkCreateFence(device, &fenceCreateInfo, nullptr, &renderFence))
+	if (vkCreateFence(device, &fenceCreateInfo, nullptr, &renderFence) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create fence");
 	}
@@ -196,7 +196,7 @@ void Renderer::initSyncStructures()
 	semaphoreCreateInfo.pNext = nullptr;
 	semaphoreCreateInfo.flags = 0;
 
-	if (vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderSemaphore) != VK_SUCCESS && vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &presentSemaphore) != VK_SUCCESS)
+	if (vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderSemaphore) != VK_SUCCESS || vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &presentSemaphore) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create semaphores");
 	}
@@ -234,6 +234,42 @@ void Renderer::drawFrame()
 	renderPassInfo.pClearValues = &clearValue;
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	//Draw commands go here
+
+	vkCmdEndRenderPass(commandBuffer);
+
+	VK_CHECK(vkEndCommandBuffer(commandBuffer));
+
+	VkSubmitInfo submit = {};
+	submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit.pNext = nullptr;
+
+	VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+	submit.pWaitDstStageMask = &waitStage;
+	submit.waitSemaphoreCount = 1;
+	submit.pWaitSemaphores = &presentSemaphore;
+	submit.signalSemaphoreCount = 1;
+	submit.pSignalSemaphores = &renderSemaphore;
+	submit.commandBufferCount = 1;
+	submit.pCommandBuffers = &commandBuffer;
+
+	VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, renderFence));
+
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.pNext = nullptr;
+
+	presentInfo.pSwapchains = &swapchain;
+	presentInfo.swapchainCount = 1;
+
+	presentInfo.pWaitSemaphores = &renderSemaphore;
+	presentInfo.waitSemaphoreCount = 1;
+
+	presentInfo.pImageIndices = &swapchainImageIndex;
+
+	VK_CHECK(vkQueuePresentKHR(graphicsQueue, &presentInfo));
 }
 
 void Renderer::cleanup()
