@@ -3,6 +3,7 @@
 
 #include "render_core.h"
 #include "VkBootstrap.h"
+#include "pipeline_builder.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -44,6 +45,8 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	initRenderpass();
 
 	initSyncStructures();
+
+	renderPipeline = buildRenderPipeline(device, renderPass, width, height);
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
@@ -235,7 +238,25 @@ void Renderer::drawFrame()
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	//Draw commands go here
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderPipeline);
+
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(width);
+	viewport.height = static_cast<float>(height);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+	VkRect2D scissor{};
+	scissor.offset = { 0, 0 };
+	scissor.extent.width = width;
+	scissor.extent.height = height;
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+	//Draw Commands Here
+	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);
 

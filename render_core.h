@@ -32,6 +32,8 @@ private:
 	VkSemaphore presentSemaphore, renderSemaphore;
 	VkFence renderFence;
 
+	VkPipeline renderPipeline;
+
 	void createSwapchain(uint32_t width, uint32_t height);
 	void cleanupSwapchain();
 	void initCommands();
