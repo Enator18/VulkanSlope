@@ -1,4 +1,4 @@
-#include "slope_game.h"
+#include "game_main.h"
 int main()
 {
 	SlopeGame game = SlopeGame();

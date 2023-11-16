@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="slope_game.cpp">
+    <ClCompile Include="game_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="render_core.cpp">
@@ -36,9 +36,12 @@
     <ClCompile Include="file_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="slope_game.h">
+    <ClInclude Include="game_main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="render_core.h">
@@ -60,6 +63,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="file_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vk_mem_alloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

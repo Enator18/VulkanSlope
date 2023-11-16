@@ -9,6 +9,14 @@
 #include <optional>
 #include <array>
 
+#include "vk_mem_alloc.h"
+
+struct AllocatedBuffer
+{
+    VkBuffer buffer;
+    VmaAllocation allocation;
+};
+
 struct Vertex
 {
     glm::vec3 pos;

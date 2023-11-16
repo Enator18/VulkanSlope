@@ -1,8 +1,10 @@
+#define VMA_IMPLEMENTATION
 #include <vulkan/vulkan.h>
 #include <iostream>
 
 #include "render_core.h"
 #include "VkBootstrap.h"
+#include "vk_mem_alloc.h"
 #include "pipeline_builder.h"
 
 #define VK_CHECK(x)                                                 \
@@ -47,6 +49,12 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	initSyncStructures();
 
 	renderPipeline = buildRenderPipeline(device, renderPass, width, height);
+
+	VmaAllocatorCreateInfo allocatorInfo = {};
+	allocatorInfo.physicalDevice = physicalDevice;
+	allocatorInfo.device = device;
+	allocatorInfo.instance = instance;
+	vmaCreateAllocator(&allocatorInfo, &allocator);
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
@@ -295,6 +303,14 @@ void Renderer::drawFrame()
 
 void Renderer::cleanup()
 {
+	vkDeviceWaitIdle(device);
+
+	vkDestroyFence(device, renderFence, nullptr);
+	vkDestroySemaphore(device, renderSemaphore, nullptr);
+	vkDestroySemaphore(device, presentSemaphore, nullptr);
+
+	vkDestroyPipeline(device, renderPipeline, nullptr);
+
 	vkDestroyRenderPass(device, renderPass, nullptr);
 
 	for (VkFramebuffer framebuffer : framebuffers)

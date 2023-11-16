@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.h>
 
 #include "VkBootstrap.h"
+#include "vk_mem_alloc.h"
 
 class Renderer
 {
@@ -33,6 +34,8 @@ private:
 	VkFence renderFence;
 
 	VkPipeline renderPipeline;
+
+	VmaAllocator allocator;
 
 	void createSwapchain(uint32_t width, uint32_t height);
 	void cleanupSwapchain();

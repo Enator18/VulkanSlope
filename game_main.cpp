@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "slope_game.h"
+#include "game_main.h"
 #include "VkBootstrap.h"
 #include "render_core.h"
 

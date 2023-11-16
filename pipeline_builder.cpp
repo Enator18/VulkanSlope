@@ -163,5 +163,7 @@ VkPipeline buildRenderPipeline(VkDevice device, VkRenderPass renderPass, uint32_
     vkDestroyShaderModule(device, fragShaderModule, nullptr);
     vkDestroyShaderModule(device, vertShaderModule, nullptr);
 
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+
     return graphicsPipeline;
 }

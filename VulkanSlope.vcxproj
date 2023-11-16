@@ -145,21 +145,24 @@
   <ItemGroup>
     <ClCompile Include="file_io.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mesh.cpp" />
     <ClCompile Include="pipeline_builder.cpp" />
     <ClCompile Include="render_core.cpp" />
     <ClCompile Include="render_utils.cpp" />
-    <ClCompile Include="slope_game.cpp" />
+    <ClCompile Include="game_main.cpp" />
     <ClCompile Include="VkBootstrap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="file_io.h" />
+    <ClInclude Include="mesh.h" />
     <ClInclude Include="pipeline_builder.h" />
     <ClInclude Include="render_core.h" />
     <ClInclude Include="render_types.h" />
     <ClInclude Include="render_utils.h" />
-    <ClInclude Include="slope_game.h" />
+    <ClInclude Include="game_main.h" />
     <ClInclude Include="VkBootstrap.h" />
     <ClInclude Include="VkBootstrapDispatch.h" />
+    <ClInclude Include="vk_mem_alloc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
