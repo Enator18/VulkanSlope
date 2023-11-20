@@ -3,6 +3,7 @@
 
 #include "VkBootstrap.h"
 #include "vk_mem_alloc.h"
+#include "mesh.h"
 
 class Renderer
 {
@@ -11,6 +12,8 @@ public:
 	void updateSwapchain(uint32_t width, uint32_t height);
 	void drawFrame();
 	void cleanup();
+
+	void uploadModel(Mesh& mesh);
 private:
 	uint32_t width;
 	uint32_t height;
