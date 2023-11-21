@@ -13,7 +13,6 @@ public:
 	void drawFrame();
 	void cleanup();
 
-	void uploadModel(Mesh& mesh);
 private:
 	uint32_t width;
 	uint32_t height;

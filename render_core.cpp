@@ -6,6 +6,7 @@
 #include "VkBootstrap.h"
 #include "vk_mem_alloc.h"
 #include "pipeline_builder.h"
+#include "mesh.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -325,16 +326,3 @@ void Renderer::cleanup()
 	vkDestroyDevice(device, nullptr);
 	vkb::destroy_debug_utils_messenger(instance, messenger);
 };
-
-void Renderer::uploadModel(Mesh& mesh)
-{
-	VkBufferCreateInfo bufferInfo = {};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = mesh.vertices.size() * sizeof(Vertex);
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	
-	VmaAllocationCreateInfo vmaAllocInfo = {};
-	vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-	VK_CHECK(vmaCreateBuffer(allocator, &bufferInfo, &vmaAllocInfo, &mesh.vertexBuffer.buffer, &mesh.vertexBuffer.allocation, nullptr));
-}
