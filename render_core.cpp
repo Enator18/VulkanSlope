@@ -1,6 +1,7 @@
 #define VMA_IMPLEMENTATION
 #include <vulkan/vulkan.h>
 #include <iostream>
+#include <vector>
 
 #include "render_core.h"
 #include "VkBootstrap.h"
@@ -214,7 +215,12 @@ void Renderer::initSyncStructures()
 	}
 }
 
-void Renderer::drawFrame()
+void Renderer::uploadMesh(Mesh& mesh)
+{
+	mesh.upload(allocator);
+}
+
+void Renderer::drawFrame(std::vector<Entity>& entities)
 {
 	VK_CHECK(vkWaitForFences(device, 1, &renderFence, true, 1000000000));
 	VK_CHECK(vkResetFences(device, 1, &renderFence));
@@ -265,6 +271,7 @@ void Renderer::drawFrame()
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 	//Draw Commands Here
+
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);

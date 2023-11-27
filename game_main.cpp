@@ -7,6 +7,7 @@
 #include "game_main.h"
 #include "VkBootstrap.h"
 #include "render_core.h"
+#include "mesh.h"
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -65,7 +66,7 @@ bool SlopeGame::tick()
 {
 	glfwPollEvents();
 
-	renderer.drawFrame();
+	renderer.drawFrame(entities);
 
 	return !glfwWindowShouldClose(window);
 }

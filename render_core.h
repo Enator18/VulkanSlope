@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
+#include <vector>
 
 #include "VkBootstrap.h"
 #include "vk_mem_alloc.h"
@@ -10,7 +11,8 @@ class Renderer
 public:
 	void init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t width, uint32_t height);
 	void updateSwapchain(uint32_t width, uint32_t height);
-	void drawFrame();
+	void uploadMesh(Mesh& mesh);
+	void drawFrame(std::vector<Entity>& entities);
 	void cleanup();
 
 private:
