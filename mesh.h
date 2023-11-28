@@ -61,7 +61,7 @@ struct Mesh
     std::vector<Vertex> vertices;
     AllocatedBuffer vertexBuffer;
 
-    void upload(VmaAllocator allocator);
+    void upload(VmaAllocator allocator, DeletionQueue* deletionQueue);
 };
 
 struct Entity

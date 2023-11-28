@@ -1,6 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <vector>
+#include <functional>
+#include <deque>
 
 #include "VkBootstrap.h"
 #include "vk_mem_alloc.h"
@@ -40,6 +42,8 @@ private:
 	VkPipeline renderPipeline;
 
 	VmaAllocator allocator;
+
+	DeletionQueue mainDeletionQueue;
 
 	void createSwapchain(uint32_t width, uint32_t height);
 	void cleanupSwapchain();

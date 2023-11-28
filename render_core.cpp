@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <iostream>
 #include <vector>
+#include <array>
 
 #include "render_core.h"
 #include "VkBootstrap.h"
@@ -57,6 +58,10 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	allocatorInfo.device = device;
 	allocatorInfo.instance = instance;
 	vmaCreateAllocator(&allocatorInfo, &allocator);
+
+	VkVertexInputBindingDescription bindingDescription = Vertex::getBindingDescription();
+
+	std::array<VkVertexInputAttributeDescription, 4> attributeDiscriptions = Vertex::getAttributeDescriptions();
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
@@ -217,7 +222,7 @@ void Renderer::initSyncStructures()
 
 void Renderer::uploadMesh(Mesh& mesh)
 {
-	mesh.upload(allocator);
+	mesh.upload(allocator, &mainDeletionQueue);
 }
 
 void Renderer::drawFrame(std::vector<Entity>& entities)
@@ -311,6 +316,8 @@ void Renderer::drawFrame(std::vector<Entity>& entities)
 
 void Renderer::cleanup()
 {
+	mainDeletionQueue.flush();
+
 	vkDeviceWaitIdle(device);
 
 	vkDestroyFence(device, renderFence, nullptr);
