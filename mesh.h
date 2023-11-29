@@ -18,18 +18,13 @@ struct Vertex
     glm::vec2 texCoord;
     glm::vec3 normal;
 
-    static VkVertexInputBindingDescription getBindingDescription()
+    static VertexInputDescription getInputDescription()
     {
         VkVertexInputBindingDescription bindingDescription{};
         bindingDescription.binding = 0;
         bindingDescription.stride = sizeof(Vertex);
         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-        return bindingDescription;
-    }
-
-    static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions()
-    {
         std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
 
         attributeDescriptions[0].binding = 0;
@@ -52,7 +47,11 @@ struct Vertex
         attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[3].offset = offsetof(Vertex, normal);
 
-        return attributeDescriptions;
+        VertexInputDescription inputDescription;
+        inputDescription.bindingDescription = bindingDescription;
+        inputDescription.attributeDescriptions = attributeDescriptions;
+
+        return inputDescription;
     }
 };
 

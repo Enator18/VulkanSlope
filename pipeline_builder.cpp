@@ -5,7 +5,7 @@
 #include "render_utils.h"
 #include "file_io.h"
 
-VkPipeline buildRenderPipeline(VkDevice device, VkRenderPass renderPass, uint32_t viewportWidth, uint32_t viewportHeight)
+VkPipeline buildRenderPipeline(VkDevice device, VkRenderPass renderPass, uint32_t viewportWidth, uint32_t viewportHeight, VertexInputDescription inputDescription)
 {
     auto vertShaderCode = readFile("shaders/vert.spv");
     auto fragShaderCode = readFile("shaders/frag.spv");
@@ -38,10 +38,15 @@ VkPipeline buildRenderPipeline(VkDevice device, VkRenderPass renderPass, uint32_
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
 
+    VkVertexInputBindingDescription bindingDescription = inputDescription.bindingDescription;
+    std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = inputDescription.attributeDescriptions;
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

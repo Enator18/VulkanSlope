@@ -51,17 +51,15 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 
 	initSyncStructures();
 
-	renderPipeline = buildRenderPipeline(device, renderPass, width, height);
+	VertexInputDescription inputDescription = Vertex::getInputDescription();
+
+	renderPipeline = buildRenderPipeline(device, renderPass, width, height, inputDescription);
 
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = physicalDevice;
 	allocatorInfo.device = device;
 	allocatorInfo.instance = instance;
 	vmaCreateAllocator(&allocatorInfo, &allocator);
-
-	VkVertexInputBindingDescription bindingDescription = Vertex::getBindingDescription();
-
-	std::array<VkVertexInputAttributeDescription, 4> attributeDiscriptions = Vertex::getAttributeDescriptions();
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
@@ -276,6 +274,12 @@ void Renderer::drawFrame(std::vector<Entity>& entities)
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 	//Draw Commands Here
+
+	for (Entity& entity : entities)
+	{
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &entity.mesh->vertexBuffer.buffer, 0);
+		vkCmdDraw(commandBuffer, entity.mesh->vertices.size(), 1, 0, 0);
+	}
 
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 

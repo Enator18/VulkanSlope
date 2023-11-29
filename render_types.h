@@ -1,5 +1,9 @@
 #pragma once
 
+#include <deque>
+#include <functional>
+#include <array>
+
 #include "vk_mem_alloc.h"
 
 struct AllocatedBuffer
@@ -26,4 +30,10 @@ struct DeletionQueue
 
 		deletors.clear();
 	}
+};
+
+struct VertexInputDescription
+{
+	VkVertexInputBindingDescription bindingDescription;
+	std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions;
 };
