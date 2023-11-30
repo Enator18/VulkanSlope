@@ -277,8 +277,11 @@ void Renderer::drawFrame(std::vector<Entity>& entities)
 
 	for (Entity& entity : entities)
 	{
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &entity.mesh->vertexBuffer.buffer, 0);
-		vkCmdDraw(commandBuffer, entity.mesh->vertices.size(), 1, 0, 0);
+		VkDeviceSize offsets[] = { 0 };
+
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &entity.mesh->vertexBuffer.buffer, offsets);
+		vkCmdBindIndexBuffer(commandBuffer, entity.mesh->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, entity.mesh->indices.size(), 1, 0, 0, 0);
 	}
 
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);

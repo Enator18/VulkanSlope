@@ -16,15 +16,15 @@
 
 void Mesh::upload(VmaAllocator allocator, DeletionQueue* deletionQueue)
 {
-	VkBufferCreateInfo bufferInfo = {};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = vertices.size() * sizeof(Vertex);
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	VkBufferCreateInfo vertexBufferInfo = {};
+	vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	vertexBufferInfo.size = vertices.size() * sizeof(Vertex);
+	vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
 	VmaAllocationCreateInfo vmaAllocInfo = {};
 	vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-	VK_CHECK(vmaCreateBuffer(allocator, &bufferInfo, &vmaAllocInfo, &vertexBuffer.buffer, &vertexBuffer.allocation, nullptr));
+	VK_CHECK(vmaCreateBuffer(allocator, &vertexBufferInfo, &vmaAllocInfo, &vertexBuffer.buffer, &vertexBuffer.allocation, nullptr));
 
 	deletionQueue->push_function([=]()
 	{
@@ -37,4 +37,24 @@ void Mesh::upload(VmaAllocator allocator, DeletionQueue* deletionQueue)
 	memcpy(data, vertices.data(), vertices.size() * sizeof(Vertex));
 
 	vmaUnmapMemory(allocator, vertexBuffer.allocation);
+
+	VkBufferCreateInfo indexBufferInfo = {};
+	indexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	indexBufferInfo.size = indices.size() * sizeof(uint32_t);
+	indexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+
+	VK_CHECK(vmaCreateBuffer(allocator, &indexBufferInfo, &vmaAllocInfo, &indexBuffer.buffer, &indexBuffer.allocation, nullptr));
+
+	deletionQueue->push_function([=]()
+		{
+			vmaDestroyBuffer(allocator, indexBuffer.buffer, indexBuffer.allocation);
+		});
+
+	void* data;
+	vmaMapMemory(allocator, indexBuffer.allocation, &data);
+
+	memcpy(data, indices.data(), indices.size() * sizeof(uint32_t));
+
+	vmaUnmapMemory(allocator, indexBuffer.allocation);
+}
 }
