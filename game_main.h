@@ -20,7 +20,7 @@ private:
 
 	Renderer renderer;
 
-	std::vector<Entity> entities;
+	std::vector<MeshInstance> instances;
 
 	int width = 800;
 	int height = 600;

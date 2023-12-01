@@ -65,7 +65,7 @@ struct Mesh
     void upload(VmaAllocator allocator, DeletionQueue* deletionQueue);
 };
 
-struct Entity
+struct MeshInstance
 {
     Mesh* mesh;
     glm::vec3 position = glm::vec3(0, 0, 0);

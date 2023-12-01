@@ -223,7 +223,7 @@ void Renderer::uploadMesh(Mesh& mesh)
 	mesh.upload(allocator, &mainDeletionQueue);
 }
 
-void Renderer::drawFrame(std::vector<Entity>& entities)
+void Renderer::drawFrame(std::vector<MeshInstance>& entities)
 {
 	VK_CHECK(vkWaitForFences(device, 1, &renderFence, true, 1000000000));
 	VK_CHECK(vkResetFences(device, 1, &renderFence));
@@ -275,16 +275,14 @@ void Renderer::drawFrame(std::vector<Entity>& entities)
 
 	//Draw Commands Here
 
-	for (Entity& entity : entities)
+	for (MeshInstance& meshInstance : instances)
 	{
 		VkDeviceSize offsets[] = { 0 };
 
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &entity.mesh->vertexBuffer.buffer, offsets);
-		vkCmdBindIndexBuffer(commandBuffer, entity.mesh->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(commandBuffer, entity.mesh->indices.size(), 1, 0, 0, 0);
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshInstance.mesh->vertexBuffer.buffer, offsets);
+		vkCmdBindIndexBuffer(commandBuffer, meshInstance.mesh->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, meshInstance.mesh->indices.size(), 1, 0, 0, 0);
 	}
-
-	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);
 

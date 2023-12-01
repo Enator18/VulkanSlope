@@ -14,7 +14,7 @@ public:
 	void init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t width, uint32_t height);
 	void updateSwapchain(uint32_t width, uint32_t height);
 	void uploadMesh(Mesh& mesh);
-	void drawFrame(std::vector<Entity>& entities);
+	void drawFrame(std::vector<MeshInstance>& instances);
 	void cleanup();
 
 private:
