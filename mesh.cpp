@@ -46,9 +46,9 @@ void Mesh::upload(VmaAllocator allocator, DeletionQueue* deletionQueue)
 	VK_CHECK(vmaCreateBuffer(allocator, &indexBufferInfo, &vmaAllocInfo, &indexBuffer.buffer, &indexBuffer.allocation, nullptr));
 
 	deletionQueue->push_function([=]()
-		{
-			vmaDestroyBuffer(allocator, indexBuffer.buffer, indexBuffer.allocation);
-		});
+	{
+		vmaDestroyBuffer(allocator, indexBuffer.buffer, indexBuffer.allocation);
+	});
 
 	void* indexData;
 	vmaMapMemory(allocator, indexBuffer.allocation, &indexData);
