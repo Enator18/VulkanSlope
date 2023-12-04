@@ -26,11 +26,6 @@ void Mesh::upload(VmaAllocator allocator, DeletionQueue* deletionQueue)
 
 	VK_CHECK(vmaCreateBuffer(allocator, &vertexBufferInfo, &vmaAllocInfo, &vertexBuffer.buffer, &vertexBuffer.allocation, nullptr));
 
-	deletionQueue->push_function([=]()
-	{
-		vmaDestroyBuffer(allocator, vertexBuffer.buffer, vertexBuffer.allocation);
-	});
-
 	void* vertexData;
 	vmaMapMemory(allocator, vertexBuffer.allocation, &vertexData);
 
@@ -45,15 +40,16 @@ void Mesh::upload(VmaAllocator allocator, DeletionQueue* deletionQueue)
 
 	VK_CHECK(vmaCreateBuffer(allocator, &indexBufferInfo, &vmaAllocInfo, &indexBuffer.buffer, &indexBuffer.allocation, nullptr));
 
-	deletionQueue->push_function([=]()
-	{
-		vmaDestroyBuffer(allocator, indexBuffer.buffer, indexBuffer.allocation);
-	});
-
 	void* indexData;
 	vmaMapMemory(allocator, indexBuffer.allocation, &indexData);
 
 	memcpy(indexData, indices.data(), indices.size() * sizeof(uint32_t));
 
 	vmaUnmapMemory(allocator, indexBuffer.allocation);
+
+	deletionQueue->push_function([=]()
+	{
+		vmaDestroyBuffer(allocator, vertexBuffer.buffer, vertexBuffer.allocation);
+		vmaDestroyBuffer(allocator, indexBuffer.buffer, indexBuffer.allocation);
+	});
 }

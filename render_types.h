@@ -1,5 +1,6 @@
 #pragma once
 
+#include<vulkan/vulkan.h>
 #include <deque>
 #include <functional>
 #include <array>
@@ -36,4 +37,13 @@ struct VertexInputDescription
 {
 	VkVertexInputBindingDescription bindingDescription;
 	std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions;
+};
+
+struct FrameData
+{
+	VkCommandPool commandPool;
+	VkCommandBuffer commandBuffer;
+	
+	VkSemaphore presentSemaphore, renderSemaphore;
+	VkFence renderFence;
 };

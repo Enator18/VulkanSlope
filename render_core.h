@@ -8,6 +8,8 @@
 #include "vk_mem_alloc.h"
 #include "mesh.h"
 
+constexpr unsigned int FRAME_OVERLAP = 2;
+
 class Renderer
 {
 public:
@@ -44,6 +46,15 @@ private:
 	VmaAllocator allocator;
 
 	DeletionQueue mainDeletionQueue;
+
+	FrameData frames[FRAME_OVERLAP];
+
+	uint32_t frameNumber = 0;
+
+	FrameData& getCurrrentFrame()
+	{
+		return frames[frameNumber % FRAME_OVERLAP];
+	}
 
 	void createSwapchain(uint32_t width, uint32_t height);
 	void cleanupSwapchain();

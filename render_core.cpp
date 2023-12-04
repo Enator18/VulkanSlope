@@ -223,7 +223,7 @@ void Renderer::uploadMesh(Mesh& mesh)
 	mesh.upload(allocator, &mainDeletionQueue);
 }
 
-void Renderer::drawFrame(std::vector<MeshInstance>& entities)
+void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 {
 	VK_CHECK(vkWaitForFences(device, 1, &renderFence, true, 1000000000));
 	VK_CHECK(vkResetFences(device, 1, &renderFence));
