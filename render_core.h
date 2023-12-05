@@ -47,6 +47,11 @@ private:
 
 	DeletionQueue mainDeletionQueue;
 
+	VkImageView depthImageView;
+	AllocatedImage depthImage;
+
+	VkFormat depthFormat;
+
 	FrameData frames[FRAME_OVERLAP];
 
 	uint32_t frameNumber = 0;
