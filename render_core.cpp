@@ -5,6 +5,7 @@
 #include <array>
 
 #include "render_core.h"
+#include "render_utils.h"
 #include "VkBootstrap.h"
 #include "vk_mem_alloc.h"
 #include "pipeline_builder.h"
@@ -66,6 +67,21 @@ void Renderer::createSwapchain(uint32_t width, uint32_t height)
 {
 	this->width = width;
 	this->height = height;
+
+	VkExtent3D depthImageExtent =
+	{
+		width,
+		height,
+		1
+	};
+
+	depthFormat = VK_FORMAT_D32_SFLOAT;
+
+	VkImageCreateInfo depthImageInfo = imageCreateInfo(depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
+
+	VmaAllocationCreateInfo depthImageAllocInfo = {};
+	depthImageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+	depthImageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	vkb::SwapchainBuilder swapchainBuilder{ physicalDevice, device, *surface };
 
