@@ -10,3 +10,4 @@ VkShaderModule createShaderModule(VkDevice device, const std::vector<char>& code
 
 VkImageCreateInfo imageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent);
 VkImageViewCreateInfo imageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags);
+VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo(bool pDepthTest, bool pDepthWrite, VkCompareOp compareOp);

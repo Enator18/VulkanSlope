@@ -83,6 +83,18 @@ void Renderer::createSwapchain(uint32_t width, uint32_t height)
 	depthImageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 	depthImageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
+	vmaCreateImage(allocator, &depthImageInfo, &depthImageAllocInfo, &depthImage.image, &depthImage.allocation, nullptr);
+
+	VkImageViewCreateInfo depthViewInfo = imageViewCreateInfo(depthFormat, depthImage.image, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+	VK_CHECK(vkCreateImageView(device, &depthViewInfo, nullptr, &depthImageView));
+
+	mainDeletionQueue.push_function([=]()
+		{
+			vkDestroyImageView(device, depthImageView, nullptr);
+			vmaDestroyImage(allocator, depthImage.image, depthImage.allocation);
+		});
+
 	vkb::SwapchainBuilder swapchainBuilder{ physicalDevice, device, *surface };
 
 	vkb::Swapchain vkbSwapchain = swapchainBuilder
@@ -158,7 +170,7 @@ void Renderer::initRenderpass()
 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentDescription depthAttachment{};
-	depthAttachment.format = VK_FORMAT_D32_SFLOAT;
+	depthAttachment.format = depthFormat;
 	depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -175,12 +187,15 @@ void Renderer::initRenderpass()
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &colorAttachmentRef;
+	subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+	VkAttachmentDescription attachments[2] = { colorAttachment, depthAttachment };
 
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.attachmentCount = 2;
+	renderPassInfo.pAttachments = &attachments[0];
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
 
@@ -203,7 +218,12 @@ void Renderer::initRenderpass()
 
 	for (int i = 0; i < swapchainImageCount; i++)
 	{
-		fbInfo.pAttachments = &swapchainImageViews[i];
+		VkImageView attachments[2];
+		attachments[0] = swapchainImageViews[i];
+		attachments[1] = depthImageView;
+
+		fbInfo.pAttachments = attachments;
+		fbInfo.attachmentCount = 2;
 		if (vkCreateFramebuffer(device, &fbInfo, nullptr, &framebuffers[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to create framebuffer");
@@ -267,8 +287,13 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 	VkClearValue clearValue;
 	clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearValue;
+	VkClearValue depthClear;
+	depthClear.depthStencil.depth = 1.f;
+
+	VkClearValue clearValues[] = {clearValue, depthClear};
+
+	renderPassInfo.clearValueCount = 2;
+	renderPassInfo.pClearValues = &clearValues[0];
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
