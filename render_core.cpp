@@ -135,22 +135,32 @@ void Renderer::initCommands()
 	commandPoolInfo.queueFamilyIndex = graphicsQueueFamily;
 	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	if (vkCreateCommandPool(device, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS)
+	for (int i = 0; i < FRAME_OVERLAP; i++)
 	{
-		throw std::runtime_error("Failed to create command pool");
+		if (vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].commandPool) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create command pool");
+		}
+
+		VkCommandBufferAllocateInfo cmdAllocInfo = {};
+		cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdAllocInfo.pNext = nullptr;
+		cmdAllocInfo.commandPool = frames[i].commandPool;
+		cmdAllocInfo.commandBufferCount = 1;
+		cmdAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+		if (vkAllocateCommandBuffers(device, &cmdAllocInfo, &frames[i].commandBuffer) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create command pool");
+		}
+
+		mainDeletionQueue.push_function([=]()
+			{
+				vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
+			});
 	}
 
-	VkCommandBufferAllocateInfo cmdAllocInfo = {};
-	cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmdAllocInfo.pNext = nullptr;
-	cmdAllocInfo.commandPool = commandPool;
-	cmdAllocInfo.commandBufferCount = 1;
-	cmdAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-	if (vkAllocateCommandBuffers(device, &cmdAllocInfo, &commandBuffer) != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create command pool");
-	}
+	
 }
 
 void Renderer::initRenderpass()
@@ -237,20 +247,30 @@ void Renderer::initSyncStructures()
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceCreateInfo.pNext = nullptr;
 	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	
-	if (vkCreateFence(device, &fenceCreateInfo, nullptr, &renderFence) != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create fence");
-	}
 
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	semaphoreCreateInfo.pNext = nullptr;
 	semaphoreCreateInfo.flags = 0;
 
-	if (vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderSemaphore) != VK_SUCCESS || vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &presentSemaphore) != VK_SUCCESS)
+	for (int i = 0; i < FRAME_OVERLAP; i++)
 	{
-		throw std::runtime_error("Failed to create semaphores");
+		if (vkCreateFence(device, &fenceCreateInfo, nullptr, &frames[i].renderFence) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create fence");
+		}
+
+		if (vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frames[i].renderSemaphore) != VK_SUCCESS || vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frames[i].presentSemaphore) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create semaphores");
+		}
+
+		mainDeletionQueue.push_function([=]()
+			{
+				vkDestroyFence(device, frames[i].renderFence, nullptr);
+				vkDestroySemaphore(device, frames[i].renderSemaphore, nullptr);
+				vkDestroySemaphore(device, frames[i].presentSemaphore, nullptr);
+			});
 	}
 }
 
@@ -261,13 +281,13 @@ void Renderer::uploadMesh(Mesh& mesh)
 
 void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 {
-	VK_CHECK(vkWaitForFences(device, 1, &renderFence, true, 1000000000));
-	VK_CHECK(vkResetFences(device, 1, &renderFence));
+	VK_CHECK(vkWaitForFences(device, 1, &getCurrentFrame().renderFence, true, 1000000000));
+	VK_CHECK(vkResetFences(device, 1, &getCurrentFrame().renderFence));
 
 	uint32_t swapchainImageIndex;
 	VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 1000000000, presentSemaphore, nullptr, &swapchainImageIndex));
 
-	VK_CHECK(vkResetCommandBuffer(commandBuffer, 0));
+	VK_CHECK(vkResetCommandBuffer(getCurrentFrame().commandBuffer, 0));
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -366,10 +386,6 @@ void Renderer::cleanup()
 
 	vkDeviceWaitIdle(device);
 
-	vkDestroyFence(device, renderFence, nullptr);
-	vkDestroySemaphore(device, renderSemaphore, nullptr);
-	vkDestroySemaphore(device, presentSemaphore, nullptr);
-
 	vkDestroyPipeline(device, renderPipeline, nullptr);
 
 	vkDestroyRenderPass(device, renderPass, nullptr);
@@ -378,8 +394,6 @@ void Renderer::cleanup()
 	{
 		vkDestroyFramebuffer(device, framebuffer, nullptr);
 	}
-
-	vkDestroyCommandPool(device, commandPool, nullptr);
 
 	cleanupSwapchain();
 

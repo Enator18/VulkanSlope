@@ -56,7 +56,7 @@ private:
 
 	uint32_t frameNumber = 0;
 
-	FrameData& getCurrrentFrame()
+	FrameData& getCurrentFrame()
 	{
 		return frames[frameNumber % FRAME_OVERLAP];
 	}
