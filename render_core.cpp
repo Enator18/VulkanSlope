@@ -44,6 +44,12 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
 	graphicsQueueFamily = device.get_queue_index(vkb::QueueType::graphics).value();
 
+	VmaAllocatorCreateInfo allocatorInfo = {};
+	allocatorInfo.physicalDevice = physicalDevice;
+	allocatorInfo.device = device;
+	allocatorInfo.instance = instance;
+	vmaCreateAllocator(&allocatorInfo, &allocator);
+
 	createSwapchain(width, height);
 
 	initCommands();
@@ -55,12 +61,6 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	VertexInputDescription inputDescription = Vertex::getInputDescription();
 
 	renderPipeline = buildRenderPipeline(device, renderPass, width, height, inputDescription);
-
-	VmaAllocatorCreateInfo allocatorInfo = {};
-	allocatorInfo.physicalDevice = physicalDevice;
-	allocatorInfo.device = device;
-	allocatorInfo.instance = instance;
-	vmaCreateAllocator(&allocatorInfo, &allocator);
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
@@ -281,13 +281,15 @@ void Renderer::uploadMesh(Mesh& mesh)
 
 void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 {
+	VkCommandBuffer& commandBuffer = getCurrentFrame().commandBuffer;
+
 	VK_CHECK(vkWaitForFences(device, 1, &getCurrentFrame().renderFence, true, 1000000000));
 	VK_CHECK(vkResetFences(device, 1, &getCurrentFrame().renderFence));
 
 	uint32_t swapchainImageIndex;
-	VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 1000000000, presentSemaphore, nullptr, &swapchainImageIndex));
+	VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 1000000000, getCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex));
 
-	VK_CHECK(vkResetCommandBuffer(getCurrentFrame().commandBuffer, 0));
+	VK_CHECK(vkResetCommandBuffer(commandBuffer, 0));
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -357,13 +359,13 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 
 	submit.pWaitDstStageMask = &waitStage;
 	submit.waitSemaphoreCount = 1;
-	submit.pWaitSemaphores = &presentSemaphore;
+	submit.pWaitSemaphores = &getCurrentFrame().presentSemaphore;
 	submit.signalSemaphoreCount = 1;
-	submit.pSignalSemaphores = &renderSemaphore;
+	submit.pSignalSemaphores = &getCurrentFrame().renderSemaphore;
 	submit.commandBufferCount = 1;
 	submit.pCommandBuffers = &commandBuffer;
 
-	VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, renderFence));
+	VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, getCurrentFrame().renderFence));
 
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -372,12 +374,14 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 	presentInfo.pSwapchains = &swapchain;
 	presentInfo.swapchainCount = 1;
 
-	presentInfo.pWaitSemaphores = &renderSemaphore;
+	presentInfo.pWaitSemaphores = &getCurrentFrame().renderSemaphore;
 	presentInfo.waitSemaphoreCount = 1;
 
 	presentInfo.pImageIndices = &swapchainImageIndex;
 
 	VK_CHECK(vkQueuePresentKHR(graphicsQueue, &presentInfo));
+
+	frameNumber += 1;
 }
 
 void Renderer::cleanup()

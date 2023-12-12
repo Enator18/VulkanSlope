@@ -33,13 +33,8 @@ private:
 	VkFormat swapchainImageFormat;
 	std::vector<VkImage> swapchainImages;
 	std::vector<VkImageView> swapchainImageViews;
-	VkCommandPool commandPool;
-	VkCommandBuffer commandBuffer;
 	VkRenderPass renderPass;
 	std::vector<VkFramebuffer> framebuffers;
-
-	VkSemaphore presentSemaphore, renderSemaphore;
-	VkFence renderFence;
 
 	VkPipeline renderPipeline;
 
