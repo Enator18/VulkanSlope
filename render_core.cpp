@@ -274,6 +274,18 @@ void Renderer::initSyncStructures()
 	}
 }
 
+void Renderer::initDescriptors()
+{
+	for (int i = 0; i < FRAME_OVERLAP; i++)
+	{
+		frames[i].cameraBuffer = createBuffer(allocator, sizeof(Camera), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+		mainDeletionQueue.push_function([&]()
+			{
+				vmaDestroyBuffer(allocator, frames[i].cameraBuffer.buffer, frames[i].cameraBuffer.allocation);
+			});
+	}
+}
+
 void Renderer::uploadMesh(Mesh& mesh)
 {
 	mesh.upload(allocator, &mainDeletionQueue);

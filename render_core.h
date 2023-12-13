@@ -61,4 +61,5 @@ private:
 	void initCommands();
 	void initRenderpass();
 	void initSyncStructures();
+	void initDescriptors();
 };

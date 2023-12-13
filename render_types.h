@@ -52,4 +52,14 @@ struct FrameData
 	
 	VkSemaphore presentSemaphore, renderSemaphore;
 	VkFence renderFence;
+
+	AllocatedBuffer cameraBuffer;
+
+	VkDescriptorSet globalDesciptor;
+};
+
+struct Camera
+{
+	glm::mat4 view;
+	glm::mat4 proj;
 };

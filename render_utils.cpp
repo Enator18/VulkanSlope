@@ -2,7 +2,10 @@
 #include <cstdlib>
 #include <cstdint>
 #include <stdexcept>
+
 #include "render_utils.h"
+#include "vk_mem_alloc.h"
+#include "render_types.h"
 
 VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
@@ -140,4 +143,22 @@ VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo(bool depthTest, boo
     info.stencilTestEnable = VK_FALSE;
 
     return info;
+}
+
+AllocatedBuffer createBuffer(VmaAllocator allocator, size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
+{
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.pNext = nullptr;
+
+    bufferInfo.size = allocSize;
+    bufferInfo.usage = usage;
+
+    VmaAllocationCreateInfo vmaAllocInfo = {};
+
+    AllocatedBuffer newBuffer;
+
+    vmaCreateBuffer(allocator, &bufferInfo, &vmaAllocInfo, &newBuffer.buffer, &newBuffer.allocation, nullptr);
+
+    return newBuffer;
 }
