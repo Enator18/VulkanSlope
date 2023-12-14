@@ -35,20 +35,19 @@ private:
 	std::vector<VkImageView> swapchainImageViews;
 	VkRenderPass renderPass;
 	std::vector<VkFramebuffer> framebuffers;
-
 	VkPipeline renderPipeline;
 
 	VmaAllocator allocator;
-
 	DeletionQueue mainDeletionQueue;
 
 	VkImageView depthImageView;
 	AllocatedImage depthImage;
-
 	VkFormat depthFormat;
 
-	FrameData frames[FRAME_OVERLAP];
+	VkDescriptorSetLayout globalSetLayout;
+	VkDescriptorPool descriptorPool;
 
+	FrameData frames[FRAME_OVERLAP];
 	uint32_t frameNumber = 0;
 
 	FrameData& getCurrentFrame()

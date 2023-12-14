@@ -272,6 +272,11 @@ void Renderer::initSyncStructures()
 				vkDestroySemaphore(device, frames[i].presentSemaphore, nullptr);
 			});
 	}
+
+	VkDescriptorSetLayoutBinding cameraBufferBinding = {};
+	cameraBufferBinding.binding = 0;
+	cameraBufferBinding.descriptorCount = 1;
+	cameraBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 }
 
 void Renderer::initDescriptors()
@@ -398,9 +403,9 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 
 void Renderer::cleanup()
 {
-	mainDeletionQueue.flush();
-
 	vkDeviceWaitIdle(device);
+	
+	mainDeletionQueue.flush();
 
 	vkDestroyPipeline(device, renderPipeline, nullptr);
 
