@@ -277,6 +277,23 @@ void Renderer::initSyncStructures()
 	cameraBufferBinding.binding = 0;
 	cameraBufferBinding.descriptorCount = 1;
 	cameraBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+	cameraBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutCreateInfo setInfo = {};
+	setInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	setInfo.pNext = nullptr;
+
+	setInfo.bindingCount = 1;
+	setInfo.flags = 0;
+	setInfo.pBindings = &cameraBufferBinding;
+
+	vkCreateDescriptorSetLayout(device, &setInfo, nullptr, &globalSetLayout);
+
+	mainDeletionQueue.push_function([&]()
+		{
+			vkDestroyDescriptorSetLayout(device, globalSetLayout, nullptr);
+		});
 }
 
 void Renderer::initDescriptors()
