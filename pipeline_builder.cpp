@@ -5,7 +5,7 @@
 #include "render_utils.h"
 #include "file_io.h"
 
-VkPipeline buildRenderPipeline(VkDevice device, VkRenderPass renderPass, uint32_t viewportWidth, uint32_t viewportHeight, VertexInputDescription inputDescription)
+VkPipeline buildRenderPipeline(VkDevice device, VkRenderPass renderPass, uint32_t viewportWidth, uint32_t viewportHeight, VkPipelineLayout pipelineLayout, VertexInputDescription inputDescription)
 {
     auto vertShaderCode = readFile("shaders/vert.spv");
     auto fragShaderCode = readFile("shaders/frag.spv");
@@ -117,12 +117,6 @@ VkPipeline buildRenderPipeline(VkDevice device, VkRenderPass renderPass, uint32_
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-    pipelineLayoutInfo.pPushConstantRanges = nullptr;
-
     VkPipelineDepthStencilStateCreateInfo depthStencil{};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencil.depthTestEnable = VK_TRUE;
@@ -134,13 +128,6 @@ VkPipeline buildRenderPipeline(VkDevice device, VkRenderPass renderPass, uint32_
     depthStencil.stencilTestEnable = VK_FALSE;
     depthStencil.front = {};
     depthStencil.back = {};
-
-    VkPipelineLayout pipelineLayout;
-
-    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create pipeline layout!");
-    }
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

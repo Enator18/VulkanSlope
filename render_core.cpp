@@ -58,9 +58,25 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 
 	initSyncStructures();
 
+	initDescriptors();
+
 	VertexInputDescription inputDescription = Vertex::getInputDescription();
 
-	renderPipeline = buildRenderPipeline(device, renderPass, width, height, inputDescription);
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutInfo.setLayoutCount = 1;
+	pipelineLayoutInfo.pSetLayouts = &globalSetLayout;
+	pipelineLayoutInfo.pushConstantRangeCount = 0;
+	pipelineLayoutInfo.pPushConstantRanges = nullptr;
+
+	VkPipelineLayout pipelineLayout;
+
+	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create pipeline layout!");
+	}
+
+	renderPipeline = buildRenderPipeline(device, renderPass, width, height, pipelineLayout, inputDescription);
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
@@ -306,6 +322,14 @@ void Renderer::initDescriptors()
 		{
 			vkDestroyDescriptorSetLayout(device, globalSetLayout, nullptr);
 		});
+
+	std::vector<VkDescriptorPoolSize> sizes =
+	{
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10 }
+	};
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+
 }
 
 void Renderer::uploadMesh(Mesh& mesh)
