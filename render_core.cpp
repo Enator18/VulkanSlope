@@ -329,7 +329,48 @@ void Renderer::initDescriptors()
 	};
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = 0;
+	poolInfo.maxSets = 1;
+	poolInfo.poolSizeCount = (uint32_t)sizes.size();
+	poolInfo.pPoolSizes = sizes.data();
 
+	vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
+
+	mainDeletionQueue.push_function([&]()
+		{
+			vkDestroyDescriptorSetLayout(device, globalSetLayout, nullptr);
+			vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+		});
+
+	for (int i = 0; i < FRAME_OVERLAP; i++)
+	{
+		frames[i].cameraBuffer = createBuffer(allocator, sizeof(Camera), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.pNext = nullptr;
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &globalSetLayout;
+
+		vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDesciptor);
+
+		VkDescriptorBufferInfo bufferInfo;
+		bufferInfo.buffer = frames[i].cameraBuffer.buffer;
+		bufferInfo.offset = 0;
+		bufferInfo.range = sizeof(Camera);
+		VkWriteDescriptorSet setWrite = {};
+		setWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		setWrite.pNext = nullptr;
+		setWrite.dstBinding = 0;
+		setWrite.dstSet = frames[i].globalDesciptor;
+		setWrite.descriptorCount = 1;
+		setWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		setWrite.pBufferInfo = &bufferInfo;
+
+		vkUpdateDescriptorSets(device, 1, &setWrite, 0, nullptr);
+	}
 }
 
 void Renderer::uploadMesh(Mesh& mesh)
@@ -393,6 +434,8 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 	scissor.extent.width = width;
 	scissor.extent.height = height;
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+	glm::mat4 cameraTransform = glm::lookAt(glm::vec3(4.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	//Draw Commands Here
 
