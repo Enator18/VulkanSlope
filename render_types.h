@@ -56,7 +56,7 @@ struct FrameData
 
 	AllocatedBuffer cameraBuffer;
 
-	VkDescriptorSet globalDesciptor;
+	VkDescriptorSet globalDescriptor;
 };
 
 struct Camera

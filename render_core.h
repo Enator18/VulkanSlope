@@ -8,7 +8,7 @@
 #include "vk_mem_alloc.h"
 #include "mesh.h"
 
-constexpr unsigned int FRAME_OVERLAP = 2;
+constexpr unsigned int FRAME_OVERLAP = 3;
 
 class Renderer
 {

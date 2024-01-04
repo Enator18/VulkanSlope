@@ -331,7 +331,7 @@ void Renderer::initDescriptors()
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.flags = 0;
-	poolInfo.maxSets = 1;
+	poolInfo.maxSets = FRAME_OVERLAP;
 	poolInfo.poolSizeCount = (uint32_t)sizes.size();
 	poolInfo.pPoolSizes = sizes.data();
 
@@ -354,7 +354,7 @@ void Renderer::initDescriptors()
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &globalSetLayout;
 
-		vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDesciptor);
+		vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDescriptor);
 
 		VkDescriptorBufferInfo bufferInfo;
 		bufferInfo.buffer = frames[i].cameraBuffer.buffer;
@@ -364,7 +364,7 @@ void Renderer::initDescriptors()
 		setWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		setWrite.pNext = nullptr;
 		setWrite.dstBinding = 0;
-		setWrite.dstSet = frames[i].globalDesciptor;
+		setWrite.dstSet = frames[i].globalDescriptor;
 		setWrite.descriptorCount = 1;
 		setWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		setWrite.pBufferInfo = &bufferInfo;
@@ -436,6 +436,14 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 	glm::mat4 cameraTransform = glm::lookAt(glm::vec3(4.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
+
+	Camera camera = { cameraTransform, projection };
+
+	void* cameraData;
+	vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &cameraData);
+	memcpy(cameraData, &camera, sizeof(Camera));
+	vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
 
 	//Draw Commands Here
 
