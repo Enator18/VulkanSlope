@@ -145,7 +145,7 @@ VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo(bool depthTest, boo
     return info;
 }
 
-AllocatedBuffer createBuffer(VmaAllocator allocator, size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
+AllocatedBuffer createBuffer(VmaAllocator allocator, size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags allocFlags)
 {
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -154,11 +154,12 @@ AllocatedBuffer createBuffer(VmaAllocator allocator, size_t allocSize, VkBufferU
     bufferInfo.size = allocSize;
     bufferInfo.usage = usage;
 
-    VmaAllocationCreateInfo vmaAllocInfo = {};
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.flags = allocFlags;
 
     AllocatedBuffer newBuffer;
 
-    vmaCreateBuffer(allocator, &bufferInfo, &vmaAllocInfo, &newBuffer.buffer, &newBuffer.allocation, nullptr);
+    vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &newBuffer.buffer, &newBuffer.allocation, nullptr);
 
     return newBuffer;
 }
