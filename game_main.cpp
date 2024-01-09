@@ -60,6 +60,19 @@ void SlopeGame::init()
 	}
 
 	renderer.init(vkbInstance, &surface, width, height);
+
+	std::vector<Vertex> vertices = {
+		{glm::vec3(-0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.0, 0.0)},
+		{glm::vec3(0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.0, 0.0)},
+		{glm::vec3(0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.0, 0.0)}
+	};
+
+	std::vector<uint32_t> indices = { 0, 1, 2 };
+	Mesh mesh = { vertices, indices };
+	renderer.uploadMesh(mesh);
+
+	MeshInstance instance = { &mesh, glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1) };
+	instances.push_back(instance);
 }
 
 bool SlopeGame::tick()
