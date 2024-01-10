@@ -58,14 +58,14 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 
 	initSyncStructures();
 
-	//initDescriptors();
+	initDescriptors();
 
 	VertexInputDescription inputDescription = Vertex::getInputDescription();
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 0;
-	//pipelineLayoutInfo.pSetLayouts = &globalSetLayout;
+	pipelineLayoutInfo.setLayoutCount = 1;
+	pipelineLayoutInfo.pSetLayouts = &globalSetLayout;
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 	pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
@@ -436,12 +436,12 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 	glm::mat4 cameraTransform = glm::lookAt(glm::vec3(4.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
 
-	/*Camera camera = {cameraTransform, projection};
+	Camera camera = {cameraTransform, projection};
 
 	void* cameraData;
 	vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &cameraData);
 	memcpy(cameraData, &camera, sizeof(Camera));
-	vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);*/
+	vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
 
 	//Draw Commands Here
 

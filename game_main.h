@@ -18,6 +18,9 @@ private:
 	vkb::Instance vkbInstance;
 	VkSurfaceKHR surface;
 
+	Mesh triangle;
+	Mesh triangle2;
+
 	Renderer renderer;
 
 	std::vector<MeshInstance> instances;

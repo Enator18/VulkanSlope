@@ -67,12 +67,22 @@ void SlopeGame::init()
 		{glm::vec3(0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.0, 0.0)}
 	};
 
-	std::vector<uint32_t> indices = { 0, 1, 2 };
-	Mesh mesh = { vertices, indices };
-	renderer.uploadMesh(mesh);
+	std::vector<Vertex> vertices2 = {
+		{glm::vec3(-0.5, 0.0, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.0, 0.0)},
+		{glm::vec3(0.5, 0.0, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.0, 0.0)},
+		{glm::vec3(0.5, 1.0, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.0, 0.0)}
+	};
 
-	MeshInstance instance = { &mesh, glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1) };
+	std::vector<uint32_t> indices = { 0, 1, 2 };
+	triangle = { vertices, indices };
+	triangle2 = { vertices2, indices };
+	renderer.uploadMesh(triangle);
+	renderer.uploadMesh(triangle2);
+
+	MeshInstance instance = { &triangle, glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1) };
+	MeshInstance instance2 = { &triangle2, glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1) };
 	instances.push_back(instance);
+	instances.push_back(instance2);
 }
 
 bool SlopeGame::tick()
