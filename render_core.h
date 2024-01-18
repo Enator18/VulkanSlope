@@ -8,7 +8,7 @@
 #include "vk_mem_alloc.h"
 #include "mesh.h"
 
-constexpr unsigned int FRAME_OVERLAP = 3;
+constexpr unsigned int FRAME_OVERLAP = 1;
 
 class Renderer
 {
@@ -36,6 +36,7 @@ private:
 	VkRenderPass renderPass;
 	std::vector<VkFramebuffer> framebuffers;
 	VkPipeline renderPipeline;
+	VkPipelineLayout pipelineLayout;
 
 	VmaAllocator allocator;
 	DeletionQueue mainDeletionQueue;

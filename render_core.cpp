@@ -69,8 +69,6 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 	pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-	VkPipelineLayout pipelineLayout;
-
 	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create pipeline layout!");
@@ -294,7 +292,7 @@ void Renderer::initDescriptors()
 {
 	for (int i = 0; i < FRAME_OVERLAP; i++)
 	{
-		frames[i].cameraBuffer = createBuffer(allocator, sizeof(Camera), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT);
+		frames[i].cameraBuffer = createBuffer(allocator, sizeof(Camera), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		mainDeletionQueue.push_function([&]()
 			{
 				vmaDestroyBuffer(allocator, frames[i].cameraBuffer.buffer, frames[i].cameraBuffer.allocation);
@@ -317,11 +315,6 @@ void Renderer::initDescriptors()
 	setInfo.pBindings = &cameraBufferBinding;
 
 	vkCreateDescriptorSetLayout(device, &setInfo, nullptr, &globalSetLayout);
-
-	mainDeletionQueue.push_function([&]()
-		{
-			vkDestroyDescriptorSetLayout(device, globalSetLayout, nullptr);
-		});
 
 	std::vector<VkDescriptorPoolSize> sizes =
 	{
@@ -416,7 +409,19 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+	glm::mat4 cameraTransform = glm::lookAt(glm::vec3(4.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
+
+	Camera camera = { cameraTransform, projection };
+
+	void* cameraData;
+	vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &cameraData);
+	memcpy(cameraData, &camera, sizeof(Camera));
+	vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
+
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderPipeline);
+
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 0, nullptr);
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -432,16 +437,6 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 	scissor.extent.width = width;
 	scissor.extent.height = height;
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-	glm::mat4 cameraTransform = glm::lookAt(glm::vec3(4.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
-
-	Camera camera = {cameraTransform, projection};
-
-	void* cameraData;
-	vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &cameraData);
-	memcpy(cameraData, &camera, sizeof(Camera));
-	vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
 
 	//Draw Commands Here
 
@@ -496,6 +491,8 @@ void Renderer::cleanup()
 	vkDeviceWaitIdle(device);
 	
 	mainDeletionQueue.flush();
+
+	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 
 	vkDestroyPipeline(device, renderPipeline, nullptr);
 

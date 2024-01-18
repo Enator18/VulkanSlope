@@ -15,4 +15,4 @@ VkImageCreateInfo imageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags,
 VkImageViewCreateInfo imageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags);
 VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo(bool pDepthTest, bool pDepthWrite, VkCompareOp compareOp);
 
-AllocatedBuffer createBuffer(VmaAllocator allocator, size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags allocFlags);
+AllocatedBuffer createBuffer(VmaAllocator allocator, size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags allocFlags, VkMemoryPropertyFlags requiredFlags);
