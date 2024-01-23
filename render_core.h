@@ -38,6 +38,8 @@ private:
 	VkPipeline renderPipeline;
 	VkPipelineLayout pipelineLayout;
 
+	VkCommandPool mainCommandPool;
+
 	VmaAllocator allocator;
 	DeletionQueue mainDeletionQueue;
 
@@ -62,4 +64,5 @@ private:
 	void initRenderpass();
 	void initSyncStructures();
 	void initDescriptors();
+	void bindResources();
 };

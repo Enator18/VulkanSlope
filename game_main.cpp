@@ -68,9 +68,9 @@ void SlopeGame::init()
 	};
 
 	std::vector<Vertex> vertices2 = {
-		{glm::vec3(-0.5, 0.0, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(-0.5, 0.0)},
-		{glm::vec3(0.5, 0.0, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.0)},
-		{glm::vec3(0.5, 1.0, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 1.0)}
+		{glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1.0, 0.0, 0.0), glm::vec2(-0.5, -0.5)},
+		{glm::vec3(0.5, -0.5, -0.5), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, -0.5)},
+		{glm::vec3(0.5, 0.5, -0.5), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)}
 	};
 
 	std::vector<uint32_t> indices = { 0, 1, 2 };

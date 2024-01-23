@@ -75,6 +75,8 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	}
 
 	renderPipeline = buildRenderPipeline(device, renderPass, width, height, pipelineLayout, inputDescription);
+
+	bindResources();
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
@@ -142,6 +144,16 @@ void Renderer::initCommands()
 	commandPoolInfo.pNext = nullptr;
 	commandPoolInfo.queueFamilyIndex = graphicsQueueFamily;
 	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+	if (vkCreateCommandPool(device, &commandPoolInfo, nullptr, &mainCommandPool) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create command pool");
+	}
+
+	mainDeletionQueue.push_function([=]()
+		{
+			vkDestroyCommandPool(device, mainCommandPool, nullptr);
+		});
 
 	for (int i = 0; i < FRAME_OVERLAP; i++)
 	{
@@ -300,6 +312,13 @@ void Renderer::initDescriptors()
 
 	cameraBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+	VkDescriptorSetLayoutBinding instanceBufferBinding = {};
+	instanceBufferBinding.binding = 1;
+	instanceBufferBinding.descriptorCount = 1;
+	instanceBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+
+	//VkDescriptorSetLayoutBinding bindings[] = {cameraBufferBinding, instanceBufferBinding};
+
 	VkDescriptorSetLayoutCreateInfo setInfo = {};
 	setInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	setInfo.pNext = nullptr;
@@ -358,6 +377,16 @@ void Renderer::initDescriptors()
 	}
 }
 
+void Renderer::bindResources()
+{
+	for (int i = 0; i < FRAME_OVERLAP; i++)
+	{
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, frames[i].commandPool);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &frames[i].globalDescriptor, 0, nullptr);
+		endSingleTimeCommands(device, graphicsQueue, frames[i].commandPool, commandBuffer);
+	}
+}
+
 void Renderer::uploadMesh(Mesh& mesh)
 {
 	mesh.upload(allocator, &mainDeletionQueue);
@@ -413,10 +442,6 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 	memcpy(cameraData, &camera, sizeof(Camera));
 	vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
 
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderPipeline);
-
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 0, nullptr);
-
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
@@ -431,6 +456,8 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 	scissor.extent.width = width;
 	scissor.extent.height = height;
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderPipeline);
 
 	//Draw Commands Here
 
