@@ -91,13 +91,7 @@ void Renderer::createSwapchain(uint32_t width, uint32_t height)
 
 	depthFormat = VK_FORMAT_D32_SFLOAT;
 
-	VkImageCreateInfo depthImageInfo = imageCreateInfo(depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
-
-	VmaAllocationCreateInfo depthImageAllocInfo = {};
-	depthImageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-	depthImageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	vmaCreateImage(allocator, &depthImageInfo, &depthImageAllocInfo, &depthImage.image, &depthImage.allocation, nullptr);
+	depthImage = createImage(allocator, device, depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent, VMA_MEMORY_USAGE_GPU_ONLY, VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
 
 	VkImageViewCreateInfo depthViewInfo = imageViewCreateInfo(depthFormat, depthImage.image, VK_IMAGE_ASPECT_DEPTH_BIT);
 

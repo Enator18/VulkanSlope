@@ -7,6 +7,33 @@
 #include "vk_mem_alloc.h"
 #include "render_types.h"
 
+AllocatedImage createImage(VmaAllocator allocator, VkDevice, VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent, VmaMemoryUsage memUsage, VkMemoryPropertyFlags memFlags)
+{
+    VkImageCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    info.pNext = nullptr;
+
+    info.imageType = VK_IMAGE_TYPE_2D;
+    info.format = format;
+    info.extent = extent;
+
+    info.mipLevels = 1;
+    info.arrayLayers = 1;
+    info.samples = VK_SAMPLE_COUNT_1_BIT;
+    info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    info.usage = usageFlags;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = memUsage;
+    allocInfo.requiredFlags = memFlags;
+
+    AllocatedImage image;
+
+    vmaCreateImage(allocator, &info, &allocInfo, &image.image, &image.allocation, nullptr);
+
+    return image;
+}
+
 VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
     VkImageViewCreateInfo viewInfo{};
