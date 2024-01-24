@@ -75,8 +75,6 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	}
 
 	renderPipeline = buildRenderPipeline(device, renderPass, width, height, pipelineLayout, inputDescription);
-
-	bindResources();
 };
 
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
@@ -144,16 +142,6 @@ void Renderer::initCommands()
 	commandPoolInfo.pNext = nullptr;
 	commandPoolInfo.queueFamilyIndex = graphicsQueueFamily;
 	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-	if (vkCreateCommandPool(device, &commandPoolInfo, nullptr, &mainCommandPool) != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create command pool");
-	}
-
-	mainDeletionQueue.push_function([=]()
-		{
-			vkDestroyCommandPool(device, mainCommandPool, nullptr);
-		});
 
 	for (int i = 0; i < FRAME_OVERLAP; i++)
 	{
@@ -305,6 +293,8 @@ void Renderer::initDescriptors()
 			});
 	}
 
+	instanceBuffer = createBuffer(allocator, sizeof(glm::mat4) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
 	VkDescriptorSetLayoutBinding cameraBufferBinding = {};
 	cameraBufferBinding.binding = 0;
 	cameraBufferBinding.descriptorCount = 1;
@@ -317,7 +307,7 @@ void Renderer::initDescriptors()
 	instanceBufferBinding.descriptorCount = 1;
 	instanceBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
-	//VkDescriptorSetLayoutBinding bindings[] = {cameraBufferBinding, instanceBufferBinding};
+	VkDescriptorSetLayoutBinding bindings[] = {cameraBufferBinding, instanceBufferBinding};
 
 	VkDescriptorSetLayoutCreateInfo setInfo = {};
 	setInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -377,16 +367,6 @@ void Renderer::initDescriptors()
 	}
 }
 
-void Renderer::bindResources()
-{
-	for (int i = 0; i < FRAME_OVERLAP; i++)
-	{
-		VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, frames[i].commandPool);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &frames[i].globalDescriptor, 0, nullptr);
-		endSingleTimeCommands(device, graphicsQueue, frames[i].commandPool, commandBuffer);
-	}
-}
-
 void Renderer::uploadMesh(Mesh& mesh)
 {
 	mesh.upload(allocator, &mainDeletionQueue);
@@ -441,6 +421,8 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 	vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &cameraData);
 	memcpy(cameraData, &camera, sizeof(Camera));
 	vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
+
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 0, nullptr);
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;

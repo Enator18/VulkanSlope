@@ -8,7 +8,8 @@
 #include "vk_mem_alloc.h"
 #include "mesh.h"
 
-constexpr unsigned int FRAME_OVERLAP = 1;
+constexpr unsigned int FRAME_OVERLAP = 3;
+constexpr unsigned int MAX_OBJECTS = 10000;
 
 class Renderer
 {
@@ -38,8 +39,6 @@ private:
 	VkPipeline renderPipeline;
 	VkPipelineLayout pipelineLayout;
 
-	VkCommandPool mainCommandPool;
-
 	VmaAllocator allocator;
 	DeletionQueue mainDeletionQueue;
 
@@ -53,6 +52,8 @@ private:
 	FrameData frames[FRAME_OVERLAP];
 	uint32_t frameNumber = 0;
 
+	AllocatedBuffer instanceBuffer;
+
 	FrameData& getCurrentFrame()
 	{
 		return frames[frameNumber % FRAME_OVERLAP];
@@ -64,5 +65,4 @@ private:
 	void initRenderpass();
 	void initSyncStructures();
 	void initDescriptors();
-	void bindResources();
 };
