@@ -34,6 +34,7 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	auto devRet = selector.set_surface(*surface)
 		.set_minimum_version(1, 1)
 		.prefer_gpu_device_type()
+		.add_required_extension("VK_KHR_shader_draw_parameters")
 		.select();
 	physicalDevice = devRet.value();
 
@@ -287,13 +288,13 @@ void Renderer::initDescriptors()
 	for (int i = 0; i < FRAME_OVERLAP; i++)
 	{
 		frames[i].cameraBuffer = createBuffer(allocator, sizeof(Camera), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		frames[i].instanceBuffer = createBuffer(allocator, sizeof(glm::mat4) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		mainDeletionQueue.push_function([&]()
 			{
 				vmaDestroyBuffer(allocator, frames[i].cameraBuffer.buffer, frames[i].cameraBuffer.allocation);
+				vmaDestroyBuffer(allocator, frames[i].instanceBuffer.buffer, frames[i].instanceBuffer.allocation);
 			});
 	}
-
-	instanceBuffer = createBuffer(allocator, sizeof(glm::mat4) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 	VkDescriptorSetLayoutBinding cameraBufferBinding = {};
 	cameraBufferBinding.binding = 0;
@@ -307,21 +308,24 @@ void Renderer::initDescriptors()
 	instanceBufferBinding.descriptorCount = 1;
 	instanceBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
+	instanceBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
 	VkDescriptorSetLayoutBinding bindings[] = {cameraBufferBinding, instanceBufferBinding};
 
 	VkDescriptorSetLayoutCreateInfo setInfo = {};
 	setInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	setInfo.pNext = nullptr;
 
-	setInfo.bindingCount = 1;
+	setInfo.bindingCount = 2;
 	setInfo.flags = 0;
-	setInfo.pBindings = &cameraBufferBinding;
+	setInfo.pBindings = &bindings[0];
 
 	vkCreateDescriptorSetLayout(device, &setInfo, nullptr, &globalSetLayout);
 
 	std::vector<VkDescriptorPoolSize> sizes =
 	{
-		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10 }
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, FRAME_OVERLAP },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, FRAME_OVERLAP }
 	};
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
@@ -350,20 +354,35 @@ void Renderer::initDescriptors()
 
 		vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDescriptor);
 
-		VkDescriptorBufferInfo bufferInfo;
-		bufferInfo.buffer = frames[i].cameraBuffer.buffer;
-		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(Camera);
-		VkWriteDescriptorSet setWrite = {};
-		setWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		setWrite.pNext = nullptr;
-		setWrite.dstBinding = 0;
-		setWrite.dstSet = frames[i].globalDescriptor;
-		setWrite.descriptorCount = 1;
-		setWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		setWrite.pBufferInfo = &bufferInfo;
+		VkDescriptorBufferInfo cameraBufferInfo;
+		cameraBufferInfo.buffer = frames[i].cameraBuffer.buffer;
+		cameraBufferInfo.offset = 0;
+		cameraBufferInfo.range = sizeof(Camera);
+		VkWriteDescriptorSet cameraSetWrite = {};
+		cameraSetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		cameraSetWrite.pNext = nullptr;
+		cameraSetWrite.dstBinding = 0;
+		cameraSetWrite.dstSet = frames[i].globalDescriptor;
+		cameraSetWrite.descriptorCount = 1;
+		cameraSetWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		cameraSetWrite.pBufferInfo = &cameraBufferInfo;
 
-		vkUpdateDescriptorSets(device, 1, &setWrite, 0, nullptr);
+		VkDescriptorBufferInfo instanceBufferInfo;
+		instanceBufferInfo.buffer = frames[i].instanceBuffer.buffer;
+		instanceBufferInfo.offset = 0;
+		instanceBufferInfo.range = sizeof(glm::mat4) * MAX_OBJECTS;
+		VkWriteDescriptorSet instanceSetWrite = {};
+		instanceSetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		instanceSetWrite.pNext = nullptr;
+		instanceSetWrite.dstBinding = 1;
+		instanceSetWrite.dstSet = frames[i].globalDescriptor;
+		instanceSetWrite.descriptorCount = 1;
+		instanceSetWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		instanceSetWrite.pBufferInfo = &instanceBufferInfo;
+
+		VkWriteDescriptorSet setWrites[] = { cameraSetWrite, instanceSetWrite };
+
+		vkUpdateDescriptorSets(device, 2, &setWrites[0], 0, nullptr);
 	}
 }
 
@@ -372,7 +391,7 @@ void Renderer::uploadMesh(Mesh& mesh)
 	mesh.upload(allocator, &mainDeletionQueue);
 }
 
-void Renderer::drawFrame(std::vector<MeshInstance>& instances)
+void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 {
 	VkCommandBuffer& commandBuffer = getCurrentFrame().commandBuffer;
 
@@ -412,15 +431,22 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	glm::mat4 cameraTransform = glm::lookAt(glm::vec3(4.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
-
-	Camera camera = { cameraTransform, projection };
-
 	void* cameraData;
 	vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &cameraData);
 	memcpy(cameraData, &camera, sizeof(Camera));
 	vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
+
+	std::vector<glm::mat4> transforms;
+
+	for (MeshInstance& instance : instances)
+	{
+		transforms.push_back(instance.transform);
+	}
+
+	void* instanceData;
+	vmaMapMemory(allocator, getCurrentFrame().instanceBuffer.allocation, &instanceData);
+	memcpy(instanceData, transforms.data(), sizeof(glm::mat4) * transforms.size());
+	vmaUnmapMemory(allocator, getCurrentFrame().instanceBuffer.allocation);
 
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 0, nullptr);
 
@@ -443,13 +469,15 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances)
 
 	//Draw Commands Here
 
-	for (MeshInstance& meshInstance : instances)
+	for (int i = 0; i < instances.size(); i++)
 	{
+		MeshInstance& instance = instances[i];
+
 		VkDeviceSize offsets[] = { 0 };
 
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshInstance.mesh->vertexBuffer.buffer, offsets);
-		vkCmdBindIndexBuffer(commandBuffer, meshInstance.mesh->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(commandBuffer, meshInstance.mesh->indices.size(), 1, 0, 0, 0);
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &instance.mesh->vertexBuffer.buffer, offsets);
+		vkCmdBindIndexBuffer(commandBuffer, instance.mesh->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, instance.mesh->indices.size(), 1, 0, 0, i);
 	}
 
 	vkCmdEndRenderPass(commandBuffer);

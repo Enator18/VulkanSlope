@@ -55,6 +55,7 @@ struct FrameData
 	VkFence renderFence;
 
 	AllocatedBuffer cameraBuffer;
+	AllocatedBuffer instanceBuffer;
 
 	VkDescriptorSet globalDescriptor;
 };

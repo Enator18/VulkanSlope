@@ -3,6 +3,7 @@
 #include <GLFW/glfw3native.h>
 #include <stdexcept>
 #include <iostream>
+#include <chrono>
 
 #include "game_main.h"
 #include "VkBootstrap.h"
@@ -81,6 +82,9 @@ void SlopeGame::init()
 
 	MeshInstance instance = { &triangle, glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1) };
 	MeshInstance instance2 = { &triangle2, glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1) };
+	instance.transform = instance.getTransformMatrix();
+	instance2.transform = instance2.getTransformMatrix();
+
 	instances.push_back(instance);
 	instances.push_back(instance2);
 }
@@ -89,7 +93,18 @@ bool SlopeGame::tick()
 {
 	glfwPollEvents();
 
-	renderer.drawFrame(instances);
+	static auto startTime = std::chrono::high_resolution_clock::now();
+
+	auto currentTime = std::chrono::high_resolution_clock::now();
+
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	glm::mat4 cameraTransform = glm::lookAt(glm::vec3(4.0f * cos(time), 4.0f * sin(time), 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
+
+	Camera camera = { cameraTransform, projection };
+
+	renderer.drawFrame(instances, camera);
 
 	return !glfwWindowShouldClose(window);
 }
