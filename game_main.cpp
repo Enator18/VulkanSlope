@@ -69,9 +69,9 @@ void SlopeGame::init()
 	};
 
 	std::vector<Vertex> vertices2 = {
-		{glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1.0, 0.0, 0.0), glm::vec2(-0.5, -0.5)},
-		{glm::vec3(0.5, -0.5, -0.5), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, -0.5)},
-		{glm::vec3(0.5, 0.5, -0.5), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)}
+		{glm::vec3(-0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(-0.5, -0.5)},
+		{glm::vec3(0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, -0.5)},
+		{glm::vec3(0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)}
 	};
 
 	std::vector<uint32_t> indices = { 0, 1, 2 };
@@ -81,7 +81,7 @@ void SlopeGame::init()
 	renderer.uploadMesh(triangle2);
 
 	MeshInstance instance = { &triangle, glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1) };
-	MeshInstance instance2 = { &triangle2, glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1) };
+	MeshInstance instance2 = { &triangle2, glm::vec3(0, 0, -0.5), glm::quat(), glm::vec3(1, 1, 1) };
 	instance.transform = instance.getTransformMatrix();
 	instance2.transform = instance2.getTransformMatrix();
 
