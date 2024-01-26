@@ -65,20 +65,30 @@ void SlopeGame::init()
 	std::vector<Vertex> vertices = {
 		{glm::vec3(-0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(-0.5, -0.5)},
 		{glm::vec3(0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, -0.5)},
-		{glm::vec3(0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)}
+		{glm::vec3(0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)},
+		{glm::vec3(-0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)}
 	};
 
-	std::vector<uint32_t> indices = { 0, 1, 2 };
-	triangle = { vertices, indices };
-	renderer.uploadMesh(triangle);
+	std::vector<Vertex> vertices2 = {
+		{glm::vec3(-0.5, -0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(-0.5, -0.5)},
+		{glm::vec3(0.5, -0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(0.5, -0.5)},
+		{glm::vec3(0.5, 0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(0.5, 0.5)},
+		{glm::vec3(-0.5, 0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(0.5, 0.5)}
+	};
 
-	MeshInstance instance = { &triangle, glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1) };
-	MeshInstance instance2 = { &triangle, glm::vec3(0, 0, -0.5), glm::quat(), glm::vec3(1, 1, 1) };
-	instance.transform = instance.getTransformMatrix();
-	instance2.transform = instance2.getTransformMatrix();
+	std::vector<uint32_t> indices = { 0, 1, 2 , 2, 3, 0};
+	triangle = { vertices, indices };
+	triangle2 = { vertices2, indices };
+	renderer.uploadMesh(triangle);
+	renderer.uploadMesh(triangle2);
+
+	MeshInstance instance = { &triangle, {glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1)} };
+	MeshInstance instance2 = { &triangle2, {glm::vec3(0, 0, -0.5), glm::quat(), glm::vec3(1, 1, 1)} };
 
 	instances.push_back(instance);
 	instances.push_back(instance2);
+
+	cameraTransform.position = glm::vec3(-4.0, 0.0, 0.5);
 }
 
 bool SlopeGame::tick()
@@ -91,10 +101,12 @@ bool SlopeGame::tick()
 
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	glm::mat4 cameraTransform = glm::lookAt(glm::vec3(4.0f * cos(time), 4.0f * sin(time), 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
+	instances[1].transform.position.y = sin(time);
 
-	Camera camera = { cameraTransform, projection };
+	glm::mat4 view = glm::lookAt(cameraTransform.position, cameraTransform.position + glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
+	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
+
+	Camera camera = { view, projection };
 
 	renderer.drawFrame(instances, camera);
 

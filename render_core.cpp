@@ -440,7 +440,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 
 	for (MeshInstance& instance : instances)
 	{
-		transforms.push_back(instance.transform);
+		transforms.push_back(instance.transform.getTransformMatrix());
 	}
 
 	void* instanceData;

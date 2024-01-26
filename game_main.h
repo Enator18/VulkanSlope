@@ -5,7 +5,9 @@
 #include <vector>
 
 #include "render_core.h"
+#include "render_types.h"
 #include "mesh.h"
+
 class SlopeGame
 {
 public:
@@ -20,6 +22,8 @@ private:
 
 	Mesh triangle;
 	Mesh triangle2;
+
+	Transform cameraTransform;
 
 	Renderer renderer;
 

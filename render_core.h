@@ -8,7 +8,7 @@
 #include "vk_mem_alloc.h"
 #include "mesh.h"
 
-constexpr unsigned int FRAME_OVERLAP = 3;
+constexpr unsigned int FRAME_OVERLAP = 2;
 constexpr unsigned int MAX_OBJECTS = 10000;
 
 class Renderer
