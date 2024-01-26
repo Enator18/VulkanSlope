@@ -101,9 +101,9 @@ bool SlopeGame::tick()
 
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	instances[1].transform.position.y = sin(time);
+	cameraTransform.rotation = glm::rotate(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), 0.5f * sin(time), glm::vec3(0, 0, 1));
 
-	glm::mat4 view = glm::lookAt(cameraTransform.position, cameraTransform.position + glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
+	glm::mat4 view = glm::lookAt(cameraTransform.position, cameraTransform.position + glm::vec3(glm::vec4(1, 0, 0, 1) * cameraTransform.getTransformMatrix()), glm::vec3(glm::vec4(0, 0, 1, 1) * cameraTransform.getTransformMatrix()));
 	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
 
 	Camera camera = { view, projection };
