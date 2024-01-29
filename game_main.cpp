@@ -20,8 +20,7 @@ void SlopeGame::onResize(int width, int height)
 {
 	this->width = width;
 	this->height = height;
-	std::cout << "Width: " << width << ", " << "Height: " << height << "\n";
-	renderer.updateSwapchain(width, height);
+	renderer.onResized(width, height);
 }
 
 void SlopeGame::init()
@@ -29,7 +28,7 @@ void SlopeGame::init()
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	window = glfwCreateWindow(width, height, "Slope", nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
@@ -107,6 +106,12 @@ bool SlopeGame::tick()
 	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
 
 	Camera camera = { view, projection };
+
+	while (width == 0 || height == 0)
+	{
+		glfwGetFramebufferSize(window, &width, &height);
+		glfwWaitEvents();
+	}
 
 	renderer.drawFrame(instances, camera);
 

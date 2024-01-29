@@ -15,14 +15,15 @@ class Renderer
 {
 public:
 	void init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t width, uint32_t height);
-	void updateSwapchain(uint32_t width, uint32_t height);
 	void uploadMesh(Mesh& mesh);
 	void drawFrame(std::vector<MeshInstance>& instances, Camera camera);
+	void onResized(uint32_t width, uint32_t height);
 	void cleanup();
 
 private:
 	uint32_t width;
 	uint32_t height;
+	bool resized;
 	VkInstance instance;
 	VkSurfaceKHR* surface;
 	VkDebugUtilsMessengerEXT messenger;
@@ -30,7 +31,7 @@ private:
 	vkb::Device device;
 	VkQueue graphicsQueue;
 	uint32_t graphicsQueueFamily;
-	VkSwapchainKHR swapchain;
+	vkb::Swapchain swapchain;
 	VkFormat swapchainImageFormat;
 	std::vector<VkImage> swapchainImages;
 	std::vector<VkImageView> swapchainImageViews;
@@ -58,9 +59,11 @@ private:
 	}
 
 	void createSwapchain(uint32_t width, uint32_t height);
+	void updateSwapchain();
 	void cleanupSwapchain();
 	void initCommands();
 	void initRenderpass();
+	void initFramebuffers();
 	void initSyncStructures();
 	void initDescriptors();
 };

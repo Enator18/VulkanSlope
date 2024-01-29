@@ -52,13 +52,10 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	vmaCreateAllocator(&allocatorInfo, &allocator);
 
 	createSwapchain(width, height);
-
 	initCommands();
-
 	initRenderpass();
-
+	initFramebuffers();
 	initSyncStructures();
-
 	initDescriptors();
 
 	VertexInputDescription inputDescription = Vertex::getInputDescription();
@@ -98,30 +95,38 @@ void Renderer::createSwapchain(uint32_t width, uint32_t height)
 
 	VK_CHECK(vkCreateImageView(device, &depthViewInfo, nullptr, &depthImageView));
 
-	mainDeletionQueue.push_function([=]()
-		{
-			vkDestroyImageView(device, depthImageView, nullptr);
-			vmaDestroyImage(allocator, depthImage.image, depthImage.allocation);
-		});
-
 	vkb::SwapchainBuilder swapchainBuilder{ physicalDevice, device, *surface };
 
-	vkb::Swapchain vkbSwapchain = swapchainBuilder
+	swapchain = swapchainBuilder
 		.use_default_format_selection()
 		.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
 		.set_desired_extent(width, height)
 		.build()
 		.value();
 
-	swapchain = vkbSwapchain.swapchain;
-	swapchainImages = vkbSwapchain.get_images().value();
-	swapchainImageViews = vkbSwapchain.get_image_views().value();
+	swapchainImages = swapchain.get_images().value();
+	swapchainImageViews = swapchain.get_image_views().value(); 
 
-	swapchainImageFormat = vkbSwapchain.image_format;
+	swapchainImageFormat = swapchain.image_format;
 };
+
+void Renderer::onResized(uint32_t width, uint32_t height)
+{
+	this->width = width;
+	this->height = height;
+	resized = true;
+}
 
 void Renderer::cleanupSwapchain()
 {
+	vkDestroyImageView(device, depthImageView, nullptr);
+	vmaDestroyImage(allocator, depthImage.image, depthImage.allocation);
+	
+	for (VkFramebuffer framebuffer : framebuffers)
+	{
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	}
+
 	for (VkImageView imageView : swapchainImageViews)
 	{
 		vkDestroyImageView(device, imageView, nullptr);
@@ -130,10 +135,18 @@ void Renderer::cleanupSwapchain()
 	vkDestroySwapchainKHR(device, swapchain, nullptr);
 }
 
-void Renderer::updateSwapchain(uint32_t width, uint32_t height)
+void Renderer::updateSwapchain()
 {
+	if (width == 0 || height == 0)
+	{
+		return;
+	}
+	vkDeviceWaitIdle(device);
+
 	cleanupSwapchain();
+
 	createSwapchain(width, height);
+	initFramebuffers();
 }
 
 void Renderer::initCommands()
@@ -168,8 +181,6 @@ void Renderer::initCommands()
 				vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
 			});
 	}
-
-	
 }
 
 void Renderer::initRenderpass()
@@ -222,7 +233,10 @@ void Renderer::initRenderpass()
 	{
 		throw std::runtime_error("Failed to create render pass");
 	}
+}
 
+void Renderer::initFramebuffers()
+{
 	VkFramebufferCreateInfo fbInfo = {};
 	fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	fbInfo.pNext = nullptr;
@@ -289,7 +303,7 @@ void Renderer::initDescriptors()
 	{
 		frames[i].cameraBuffer = createBuffer(allocator, sizeof(Camera), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		frames[i].instanceBuffer = createBuffer(allocator, sizeof(glm::mat4) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		mainDeletionQueue.push_function([&]()
+		mainDeletionQueue.push_function([&, i]()
 			{
 				vmaDestroyBuffer(allocator, frames[i].cameraBuffer.buffer, frames[i].cameraBuffer.allocation);
 				vmaDestroyBuffer(allocator, frames[i].instanceBuffer.buffer, frames[i].instanceBuffer.allocation);
@@ -396,10 +410,18 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	VkCommandBuffer& commandBuffer = getCurrentFrame().commandBuffer;
 
 	VK_CHECK(vkWaitForFences(device, 1, &getCurrentFrame().renderFence, true, 1000000000));
-	VK_CHECK(vkResetFences(device, 1, &getCurrentFrame().renderFence));
 
 	uint32_t swapchainImageIndex;
-	VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 1000000000, getCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex));
+	VkResult result = vkAcquireNextImageKHR(device, swapchain, 1000000000, getCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		updateSwapchain();
+		resized = false;
+		return;
+	}
+
+	VK_CHECK(vkResetFences(device, 1, &getCurrentFrame().renderFence));
 
 	VK_CHECK(vkResetCommandBuffer(commandBuffer, 0));
 
@@ -416,7 +438,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	renderPassInfo.renderPass = renderPass;
 	renderPassInfo.framebuffer = framebuffers[swapchainImageIndex];
 	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = { width, height };
+	renderPassInfo.renderArea.extent = swapchain.extent;
 
 	VkClearValue clearValue;
 	clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -424,7 +446,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	VkClearValue depthClear;
 	depthClear.depthStencil.depth = 1.f;
 
-	VkClearValue clearValues[] = {clearValue, depthClear};
+	VkClearValue clearValues[] = { clearValue, depthClear };
 
 	renderPassInfo.clearValueCount = 2;
 	renderPassInfo.pClearValues = &clearValues[0];
@@ -504,7 +526,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.pNext = nullptr;
 
-	presentInfo.pSwapchains = &swapchain;
+	presentInfo.pSwapchains = &swapchain.swapchain;
 	presentInfo.swapchainCount = 1;
 
 	presentInfo.pWaitSemaphores = &getCurrentFrame().renderSemaphore;
@@ -512,7 +534,13 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 
 	presentInfo.pImageIndices = &swapchainImageIndex;
 
-	VK_CHECK(vkQueuePresentKHR(graphicsQueue, &presentInfo));
+	result = vkQueuePresentKHR(graphicsQueue, &presentInfo);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || resized)
+	{
+		updateSwapchain();
+		resized = false;
+	}
 
 	frameNumber += 1;
 }
@@ -529,12 +557,9 @@ void Renderer::cleanup()
 
 	vkDestroyRenderPass(device, renderPass, nullptr);
 
-	for (VkFramebuffer framebuffer : framebuffers)
-	{
-		vkDestroyFramebuffer(device, framebuffer, nullptr);
-	}
-
 	cleanupSwapchain();
+
+	vmaDestroyAllocator(allocator);
 
 	vkDestroyDevice(device, nullptr);
 	vkb::destroy_debug_utils_messenger(instance, messenger);
