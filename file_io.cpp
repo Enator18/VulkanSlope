@@ -24,3 +24,8 @@ std::vector<char> readFile(const std::string& filename)
 
     return buffer;
 }
+
+bool loadModel(tinygltf::Model& model, const char* filename)
+{
+
+}
