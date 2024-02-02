@@ -9,6 +9,7 @@
 #include "VkBootstrap.h"
 #include "render_core.h"
 #include "mesh.h"
+#include "file_io.h"
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -60,6 +61,8 @@ void SlopeGame::init()
 	}
 
 	renderer.init(vkbInstance, &surface, width, height);
+
+	loadModel("/models/monkeyhead.glb");
 
 	std::vector<Vertex> vertices = {
 		{glm::vec3(-0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(-0.5, -0.5)},
