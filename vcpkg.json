@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "dependencies": [
+    "glfw3",
+    "fastgltf",
+    "glm"
+  ],
+  "builtin-baseline": "710677da49b03885c65c8b5ca43072d4b1acde75"
+}
