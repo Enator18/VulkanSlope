@@ -118,8 +118,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\CppLibraries\glfw-3.3.8.bin.WIN64\lib-vc2022;C:\VulkanSDK\1.3.261.1\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\CppLibraries\glfw-3.3.8.bin.WIN64\lib-vc2022;C:\CppLibraries\fastgltf-0.6.1\out\build\x64-Release;C:\VulkanSDK\1.3.261.1\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;fastgltf.lib;fastgltf_simdjson.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

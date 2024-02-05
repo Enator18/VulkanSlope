@@ -4,6 +4,8 @@
 #include <memory>
 #include <filesystem>
 
+#include "mesh.h"
+
 struct GeoSurface
 {
     uint32_t startIndex;
@@ -15,6 +17,8 @@ struct MeshAsset
     std::string name;
 
     std::vector<GeoSurface> surfaces;
+
+    Mesh mesh;
 };
 
 std::vector<char> readFile(const std::string& fileName);
