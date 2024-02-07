@@ -62,16 +62,18 @@ void SlopeGame::init()
 
 	renderer.init(vkbInstance, &surface, width, height);
 
-	loadModel("/models/monkeyhead.glb");
+	//loadModel("/models/monkeyhead.glb");
 
-	std::vector<Vertex> vertices = {
+	std::vector<Vertex> vertices =
+	{
 		{glm::vec3(-0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(-0.5, -0.5)},
 		{glm::vec3(0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, -0.5)},
 		{glm::vec3(0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)},
 		{glm::vec3(-0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)}
 	};
 
-	std::vector<Vertex> vertices2 = {
+	std::vector<Vertex> vertices2 =
+	{
 		{glm::vec3(-0.5, -0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(-0.5, -0.5)},
 		{glm::vec3(0.5, -0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(0.5, -0.5)},
 		{glm::vec3(0.5, 0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(0.5, 0.5)},
