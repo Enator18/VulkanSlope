@@ -7,6 +7,7 @@
 #include "render_core.h"
 #include "render_types.h"
 #include "mesh.h"
+#include "file_io.h"
 
 class SlopeGame
 {
@@ -27,6 +28,7 @@ private:
 
 	Renderer renderer;
 
+	std::vector<MeshAsset> assets;
 	std::vector<MeshInstance> instances;
 
 	int width = 800;

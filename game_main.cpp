@@ -62,35 +62,17 @@ void SlopeGame::init()
 
 	renderer.init(vkbInstance, &surface, width, height);
 
-	//loadModel("/models/monkeyhead.glb");
+	std::optional<std::vector<std::shared_ptr<MeshAsset>>> models = loadModel("models/monkeyhead.glb");
 
-	std::vector<Vertex> vertices =
+	for (std::shared_ptr<MeshAsset> asset : models.value())
 	{
-		{glm::vec3(-0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(-0.5, -0.5)},
-		{glm::vec3(0.5, -0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, -0.5)},
-		{glm::vec3(0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)},
-		{glm::vec3(-0.5, 0.5, 0), glm::vec3(1.0, 0.0, 0.0), glm::vec2(0.5, 0.5)}
-	};
+		renderer.uploadMesh(asset.get()->mesh);
+		assets.push_back(*asset.get());
+	}
 
-	std::vector<Vertex> vertices2 =
-	{
-		{glm::vec3(-0.5, -0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(-0.5, -0.5)},
-		{glm::vec3(0.5, -0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(0.5, -0.5)},
-		{glm::vec3(0.5, 0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(0.5, 0.5)},
-		{glm::vec3(-0.5, 0.5, 0), glm::vec3(0.0, 1.0, 0.0), glm::vec2(0.5, 0.5)}
-	};
-
-	std::vector<uint32_t> indices = { 0, 1, 2 , 2, 3, 0};
-	triangle = { vertices, indices };
-	triangle2 = { vertices2, indices };
-	renderer.uploadMesh(triangle);
-	renderer.uploadMesh(triangle2);
-
-	MeshInstance instance = { &triangle, {glm::vec3(0, 0, 0), glm::quat(), glm::vec3(1, 1, 1)} };
-	MeshInstance instance2 = { &triangle2, {glm::vec3(0, 0, -0.5), glm::quat(), glm::vec3(1, 1, 1)} };
+	MeshInstance instance = { &assets[0].mesh, {glm::vec3(0, 0, 0), glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(0.0f), glm::radians(-90.0f))), glm::vec3(1, 1, 1)}};
 
 	instances.push_back(instance);
-	instances.push_back(instance2);
 
 	cameraTransform.position = glm::vec3(-4.0, 0.0, 0.5);
 }

@@ -49,10 +49,10 @@ std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem
     }
     else
     {
-        return std::optional<std::vector<std::shared_ptr<MeshAsset>>>();
+        return {};
     }
 
-    std::optional<std::vector<std::shared_ptr<MeshAsset>>> meshes;
+    std::vector<std::shared_ptr<MeshAsset>> meshes;
 
     std::vector<uint32_t> indices;
     std::vector<Vertex> vertices;
@@ -142,6 +142,8 @@ std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem
 
         asset.mesh.vertices = vertices;
         asset.mesh.indices = indices;
+
+        meshes.emplace_back(std::make_shared<MeshAsset>(std::move(asset)));
     }
 
 
