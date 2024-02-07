@@ -22,8 +22,9 @@ layout(location = 2) out vec3 fragNormal;
 
 void main()
 {
-    gl_Position = camera.proj * camera.view * instanceBuffer.instances[gl_BaseInstance] * vec4(inPosition, 1.0);
+    mat4 model = instanceBuffer.instances[gl_BaseInstance];
+    gl_Position = camera.proj * camera.view * model * vec4(inPosition, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
-    fragNormal = inNormal;
+    fragNormal = (model * vec4(inNormal, 0.0)).xyz;
 }

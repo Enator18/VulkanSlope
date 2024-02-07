@@ -70,11 +70,13 @@ void SlopeGame::init()
 		assets.push_back(*asset.get());
 	}
 
-	MeshInstance instance = { &assets[0].mesh, {glm::vec3(0, 0, 0), glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(0.0f), glm::radians(-90.0f))), glm::vec3(1, 1, 1)}};
+	MeshInstance instance = { &assets[0].mesh, {glm::vec3(2.0, 0, 0.0), glm::vec3(glm::radians(90.0f), glm::radians(0.0f), glm::radians(-90.0f)), glm::vec3(1, 1, 1)}};
+	MeshInstance instance2 = { &assets[0].mesh, {glm::vec3(-2.0, 0, 0.0), glm::vec3(glm::radians(90.0f), glm::radians(0.0f), glm::radians(-90.0f)), glm::vec3(1, 1, 1)} };
 
 	instances.push_back(instance);
+	instances.push_back(instance2);
 
-	cameraTransform.position = glm::vec3(-4.0, 0.0, 0.5);
+	cameraTransform.position = glm::vec3(-8.0, 0.0, 0.0);
 }
 
 bool SlopeGame::tick()
@@ -93,7 +95,7 @@ bool SlopeGame::tick()
 
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	cameraTransform.rotation = glm::rotate(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), 0.5f * sin(time), glm::vec3(0, 0, 1));
+	//instances[0].transform.rotation = glm::vec3(glm::radians(90.0f), 0.0, 0.8 * time);
 
 	glm::mat4 view = glm::lookAt(cameraTransform.position, cameraTransform.position + glm::vec3(glm::vec4(1, 0, 0, 1) * cameraTransform.getTransformMatrix()), glm::vec3(glm::vec4(0, 0, 1, 1) * cameraTransform.getTransformMatrix()));
 	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
