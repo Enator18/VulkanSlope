@@ -70,7 +70,7 @@ struct Transform
 
 	glm::mat4 getTransformMatrix()
 	{
-		return glm::translate(glm::scale(glm::mat4_cast(glm::quat(rotation)), scale), position);
+		return glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(glm::quat(rotation)), scale);
 	}
 };
 
