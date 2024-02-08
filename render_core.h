@@ -16,6 +16,7 @@ class Renderer
 public:
 	void init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t width, uint32_t height);
 	void uploadMesh(Mesh& mesh);
+	void deleteMesh(Mesh& mesh);
 	void drawFrame(std::vector<MeshInstance>& instances, Camera camera);
 	void onResized(uint32_t width, uint32_t height);
 	void cleanup();

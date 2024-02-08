@@ -10,6 +10,7 @@
 #include "render_core.h"
 #include "mesh.h"
 #include "file_io.h"
+#include "math_utils.h"
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -33,6 +34,7 @@ void SlopeGame::init()
 	window = glfwCreateWindow(width, height, "Slope", nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 #ifdef NDEBUG
 	bool validation = false;
@@ -70,13 +72,15 @@ void SlopeGame::init()
 		assets.push_back(*asset.get());
 	}
 
-	MeshInstance instance = { &assets[0].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(glm::radians(90.0f), glm::radians(0.0f), glm::radians(-90.0f)), glm::vec3(1, 1, 1)}};
+	MeshInstance instance = { &assets[0].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(glm::radians(90.0f), glm::radians(0.0f), glm::radians(-90.0f)), glm::vec3(1, 1, 1)} };
 	MeshInstance instance2 = { &assets[0].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(glm::radians(90.0f), glm::radians(0.0f), glm::radians(-90.0f)), glm::vec3(1, 1, 1)} };
 
 	instances.push_back(instance);
 	instances.push_back(instance2);
 
 	cameraTransform.position = glm::vec3(-8.0, 0.0, 0.0);
+
+	previousTime = std::chrono::high_resolution_clock::now();
 }
 
 bool SlopeGame::tick()
@@ -89,17 +93,43 @@ bool SlopeGame::tick()
 		glfwWaitEvents();
 	}
 
-	static auto startTime = std::chrono::high_resolution_clock::now();
+	currentTime = std::chrono::high_resolution_clock::now();
 
-	auto currentTime = std::chrono::high_resolution_clock::now();
+	float delta = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
 
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+	previousTime = currentTime;
 
-	instances[0].transform.rotation.z = 3.2 * time;
-	instances[1].transform.rotation.z = 1.6 * time;
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
 
-	glm::mat4 view = glm::lookAt(cameraTransform.position, cameraTransform.position + glm::vec3(glm::vec4(1, 0, 0, 1) * cameraTransform.getTransformMatrix()), glm::vec3(glm::vec4(0, 0, 1, 1) * cameraTransform.getTransformMatrix()));
-	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
+	cameraTransform.rotation.y += (mouseY - ypos) * delta * MOUSE_SENSITIVITY;
+	cameraTransform.rotation.z += (mouseX - xpos) * delta * MOUSE_SENSITIVITY;
+
+	mouseX = xpos;
+	mouseY = ypos;
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		cameraTransform.position += glm::vec3(glm::vec4(FLY_SPEED * delta, 0.0, 0.0, 1.0) * cameraTransform.getRotationMatrix());
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		cameraTransform.position += glm::vec3(glm::vec4(0.0, -FLY_SPEED * delta, 0.0, 1.0) * cameraTransform.getRotationMatrix());
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		cameraTransform.position += glm::vec3(glm::vec4(-1 * FLY_SPEED * delta, 0.0, 0.0, 1.0) * cameraTransform.getRotationMatrix());
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		cameraTransform.position += glm::vec3(glm::vec4(0.0, FLY_SPEED * delta, 0.0, 1.0) * cameraTransform.getRotationMatrix());
+	}
+
+	glm::mat4 view = glm::lookAt(cameraTransform.position, cameraTransform.position + glm::vec3(glm::vec4(1, 0, 0, 1) * cameraTransform.getRotationMatrix()), glm::vec3(glm::vec4(0, 0, 1, 1) * cameraTransform.getRotationMatrix()));
+	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 40.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
 
 	Camera camera = { view, projection };
 
@@ -110,6 +140,11 @@ bool SlopeGame::tick()
 
 void SlopeGame::cleanup()
 {
+	for (MeshAsset asset : assets)
+	{
+		renderer.deleteMesh(asset.mesh);
+	}
+
 	renderer.cleanup();
 
 	vkDestroySurfaceKHR(vkbInstance.instance, surface, nullptr);

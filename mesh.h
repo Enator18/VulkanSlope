@@ -10,6 +10,7 @@
 #include <array>
 
 #include "render_types.h"
+#include "math_utils.h"
 
 struct Vertex
 {
@@ -62,7 +63,7 @@ struct Mesh
     AllocatedBuffer vertexBuffer;
     AllocatedBuffer indexBuffer;
 
-    void upload(VmaAllocator allocator, DeletionQueue* deletionQueue);
+    void upload(VmaAllocator allocator);
 };
 
 struct MeshInstance

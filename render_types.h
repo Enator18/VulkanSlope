@@ -62,18 +62,6 @@ struct FrameData
 	VkDescriptorSet globalDescriptor;
 };
 
-struct Transform
-{
-	glm::vec3 position = glm::vec3(0, 0, 0);
-	glm::vec3 rotation;
-	glm::vec3 scale = glm::vec3(1, 1, 1);
-
-	glm::mat4 getTransformMatrix()
-	{
-		return glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(glm::quat(rotation)), scale);
-	}
-};
-
 struct Camera
 {
 	glm::mat4 view;

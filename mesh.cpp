@@ -14,7 +14,7 @@
 		}                                                           \
 	} while (0)
 
-void Mesh::upload(VmaAllocator allocator, DeletionQueue* deletionQueue)
+void Mesh::upload(VmaAllocator allocator)
 {
 	VkBufferCreateInfo vertexBufferInfo = {};
 	vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -47,9 +47,9 @@ void Mesh::upload(VmaAllocator allocator, DeletionQueue* deletionQueue)
 
 	vmaUnmapMemory(allocator, indexBuffer.allocation);
 
-	deletionQueue->push_function([=]()
+	/*deletionQueue->push_function([&, allocator]()
 	{
 		vmaDestroyBuffer(allocator, vertexBuffer.buffer, vertexBuffer.allocation);
 		vmaDestroyBuffer(allocator, indexBuffer.buffer, indexBuffer.allocation);
-	});
+	});*/
 }

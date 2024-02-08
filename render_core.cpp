@@ -402,7 +402,14 @@ void Renderer::initDescriptors()
 
 void Renderer::uploadMesh(Mesh& mesh)
 {
-	mesh.upload(allocator, &mainDeletionQueue);
+	mesh.upload(allocator);
+}
+
+void Renderer::deleteMesh(Mesh& mesh)
+{
+	vkDeviceWaitIdle(device);
+	vmaDestroyBuffer(allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
+	vmaDestroyBuffer(allocator, mesh.indexBuffer.buffer, mesh.indexBuffer.allocation);
 }
 
 void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
