@@ -46,10 +46,4 @@ void Mesh::upload(VmaAllocator allocator)
 	memcpy(indexData, indices.data(), indices.size() * sizeof(uint32_t));
 
 	vmaUnmapMemory(allocator, indexBuffer.allocation);
-
-	/*deletionQueue->push_function([&, allocator]()
-	{
-		vmaDestroyBuffer(allocator, vertexBuffer.buffer, vertexBuffer.allocation);
-		vmaDestroyBuffer(allocator, indexBuffer.buffer, indexBuffer.allocation);
-	});*/
 }
