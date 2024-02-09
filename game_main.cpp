@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <chrono>
+#include <algorithm>
 
 #include "game_main.h"
 #include "VkBootstrap.h"
@@ -72,8 +73,8 @@ void SlopeGame::init()
 		assets.push_back(*asset.get());
 	}
 
-	MeshInstance instance = { &assets[0].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(glm::radians(90.0f), glm::radians(0.0f), glm::radians(-90.0f)), glm::vec3(1, 1, 1)} };
-	MeshInstance instance2 = { &assets[0].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(glm::radians(90.0f), glm::radians(0.0f), glm::radians(-90.0f)), glm::vec3(1, 1, 1)} };
+	MeshInstance instance = { &assets[0].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)} };
+	MeshInstance instance2 = { &assets[0].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)} };
 
 	instances.push_back(instance);
 	instances.push_back(instance2);
@@ -102,8 +103,10 @@ bool SlopeGame::tick()
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
-	cameraTransform.rotation.y += (mouseY - ypos) * delta * MOUSE_SENSITIVITY;
-	cameraTransform.rotation.z += (mouseX - xpos) * delta * MOUSE_SENSITIVITY;
+	cameraTransform.rotation.x += (mouseY - ypos) * delta * MOUSE_SENSITIVITY;
+	cameraTransform.rotation.y += (mouseX - xpos) * delta * MOUSE_SENSITIVITY;
+
+	cameraTransform.rotation.x = std::clamp(cameraTransform.rotation.x, -90.0f, 90.0f);
 
 	mouseX = xpos;
 	mouseY = ypos;
@@ -120,7 +123,7 @@ bool SlopeGame::tick()
 
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		cameraTransform.position += glm::vec3(glm::vec4(-1 * FLY_SPEED * delta, 0.0, 0.0, 1.0) * cameraTransform.getRotationMatrix());
+		cameraTransform.position += glm::vec3(glm::vec4(-FLY_SPEED * delta, 0.0, 0.0, 1.0) * cameraTransform.getRotationMatrix());
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)

@@ -18,7 +18,7 @@ public:
 	bool tick();
 	void cleanup();
 private:
-	const float MOUSE_SENSITIVITY = 0.1;
+	const float MOUSE_SENSITIVITY = 6;
 	const float FLY_SPEED = 2;
 
 	GLFWwindow* window;

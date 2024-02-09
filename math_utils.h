@@ -13,3 +13,5 @@ struct Transform
 	glm::mat4 getRotationMatrix();
 	glm::vec3 getForwardVector();
 };
+
+glm::quat quatFromEulerAngles(glm::vec3 angles);
