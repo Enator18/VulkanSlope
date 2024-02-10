@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 #vcpkg
 vcpkg_installed/
+
+#Compiled Shaders
+*.spv
