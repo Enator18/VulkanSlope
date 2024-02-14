@@ -9,6 +9,7 @@
 #include <array>
 
 #include "vk_mem_alloc.h"
+#include "render_alloc.h"
 
 struct AllocatedBuffer
 {
@@ -60,6 +61,7 @@ struct FrameData
 	AllocatedBuffer instanceBuffer;
 
 	VkDescriptorSet globalDescriptor;
+	DescriptorAllocator descriptorAllocator;
 };
 
 struct Camera

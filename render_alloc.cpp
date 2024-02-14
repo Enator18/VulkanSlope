@@ -151,3 +151,20 @@ void DescriptorWriter::writeImage(int binding, VkImageView image, VkSampler samp
 
 	writes.push_back(write);
 }
+
+void DescriptorWriter::clear()
+{
+	imageInfos.clear();
+	writes.clear();
+	bufferInfos.clear();
+}
+
+void DescriptorWriter::updateSet(VkDevice device, VkDescriptorSet set)
+{
+	for (VkWriteDescriptorSet& write : writes)
+	{
+		write.dstSet = set;
+	}
+
+	vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
+}
