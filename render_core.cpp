@@ -336,67 +336,26 @@ void Renderer::initDescriptors()
 
 	vkCreateDescriptorSetLayout(device, &setInfo, nullptr, &globalSetLayout);
 
-	std::vector<VkDescriptorPoolSize> sizes =
-	{
-		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, FRAME_OVERLAP },
-		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, FRAME_OVERLAP }
-	};
-
-	VkDescriptorPoolCreateInfo poolInfo = {};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.flags = 0;
-	poolInfo.maxSets = FRAME_OVERLAP;
-	poolInfo.poolSizeCount = (uint32_t)sizes.size();
-	poolInfo.pPoolSizes = sizes.data();
-
-	vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
-
 	mainDeletionQueue.push_function([&]()
 		{
 			vkDestroyDescriptorSetLayout(device, globalSetLayout, nullptr);
-			vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 		});
 
 	for (int i = 0; i < FRAME_OVERLAP; i++)
 	{
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.pNext = nullptr;
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = descriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &globalSetLayout;
+		std::vector<DescriptorAllocator::PoolSizeRatio> frameSizes =
+		{
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 }
+		};
 
-		vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDescriptor);
+		frames[i].descriptorAllocator = DescriptorAllocator{};
+		frames[i].descriptorAllocator.init(device, 1000, frameSizes);
 
-		VkDescriptorBufferInfo cameraBufferInfo;
-		cameraBufferInfo.buffer = frames[i].cameraBuffer.buffer;
-		cameraBufferInfo.offset = 0;
-		cameraBufferInfo.range = sizeof(Camera);
-		VkWriteDescriptorSet cameraSetWrite = {};
-		cameraSetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraSetWrite.pNext = nullptr;
-		cameraSetWrite.dstBinding = 0;
-		cameraSetWrite.dstSet = frames[i].globalDescriptor;
-		cameraSetWrite.descriptorCount = 1;
-		cameraSetWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		cameraSetWrite.pBufferInfo = &cameraBufferInfo;
-
-		VkDescriptorBufferInfo instanceBufferInfo;
-		instanceBufferInfo.buffer = frames[i].instanceBuffer.buffer;
-		instanceBufferInfo.offset = 0;
-		instanceBufferInfo.range = sizeof(glm::mat4) * MAX_OBJECTS;
-		VkWriteDescriptorSet instanceSetWrite = {};
-		instanceSetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		instanceSetWrite.pNext = nullptr;
-		instanceSetWrite.dstBinding = 1;
-		instanceSetWrite.dstSet = frames[i].globalDescriptor;
-		instanceSetWrite.descriptorCount = 1;
-		instanceSetWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		instanceSetWrite.pBufferInfo = &instanceBufferInfo;
-
-		VkWriteDescriptorSet setWrites[] = { cameraSetWrite, instanceSetWrite };
-
-		vkUpdateDescriptorSets(device, 2, &setWrites[0], 0, nullptr);
+		mainDeletionQueue.push_function([&, i]()
+		{
+			frames[i].descriptorAllocator.destroyPools(device);
+		});
 	}
 }
 
@@ -417,6 +376,8 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	VkCommandBuffer& commandBuffer = getCurrentFrame().commandBuffer;
 
 	VK_CHECK(vkWaitForFences(device, 1, &getCurrentFrame().renderFence, true, 1000000000));
+
+	getCurrentFrame().descriptorAllocator.clearPools(device);
 
 	uint32_t swapchainImageIndex;
 	VkResult result = vkAcquireNextImageKHR(device, swapchain, 1000000000, getCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex);
@@ -477,7 +438,15 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	memcpy(instanceData, transforms.data(), sizeof(glm::mat4) * transforms.size());
 	vmaUnmapMemory(allocator, getCurrentFrame().instanceBuffer.allocation);
 
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 0, nullptr);
+	VkDescriptorSet globalDescriptor = getCurrentFrame().descriptorAllocator.allocate(device, globalSetLayout);
+
+	DescriptorWriter writer = DescriptorWriter{};
+	writer.writeBuffer(0, getCurrentFrame().cameraBuffer.buffer, sizeof(Camera), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+	writer.writeBuffer(1, getCurrentFrame().instanceBuffer.buffer, sizeof(MeshInstance) * MAX_OBJECTS, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+	writer.updateSet(device, globalDescriptor);
+
+
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalDescriptor, 0, nullptr);
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;

@@ -34,6 +34,12 @@ AllocatedImage createImage(VmaAllocator allocator, VkDevice, VkFormat format, Vk
     return image;
 }
 
+AllocatedImage createImage(void* data, VmaAllocator allocator, VkDevice device, VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent, VmaMemoryUsage memUsage, VkMemoryPropertyFlags memFlags)
+{
+    size_t dataSize = extent.depth * extent.width * extent.height * 4;
+    AllocatedBuffer uploadBuffer = createBuffer(allocator, dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, 0);
+}
+
 VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
     VkImageViewCreateInfo viewInfo{};

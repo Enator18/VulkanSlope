@@ -5,7 +5,8 @@
 #include "vk_mem_alloc.h"
 #include "render_types.h"
 
-AllocatedImage createImage(VmaAllocator allocator, VkDevice, VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent, VmaMemoryUsage memUsage, VkMemoryPropertyFlags memFlags);
+AllocatedImage createImage(VmaAllocator allocator, VkDevice device, VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent, VmaMemoryUsage memUsage, VkMemoryPropertyFlags memFlags);
+AllocatedImage createImage(void* data, VmaAllocator allocator, VkDevice device, VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent, VmaMemoryUsage memUsage, VkMemoryPropertyFlags memFlags);
 VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 uint32_t findMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);

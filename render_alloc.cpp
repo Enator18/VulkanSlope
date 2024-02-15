@@ -11,6 +11,9 @@ void DescriptorAllocator::init(VkDevice device, uint32_t maxSets, std::span<Pool
 
 	VkDescriptorPool newPool = createPool(device, maxSets, poolRatios);
 
+	setsPerPool = maxSets * 1.5;
+
+	readyPools.push_back(newPool);
 }
 
 void DescriptorAllocator::clearPools(VkDevice device)
