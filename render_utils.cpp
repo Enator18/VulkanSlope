@@ -7,6 +7,7 @@
 #include "vk_mem_alloc.h"
 #include "render_types.h"
 
+//Create blank image
 AllocatedImage createImage(VmaAllocator allocator, VkDevice device, VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent, VmaMemoryUsage memUsage, VkMemoryPropertyFlags memFlags)
 {
     VkImageCreateInfo info = {};
@@ -34,6 +35,7 @@ AllocatedImage createImage(VmaAllocator allocator, VkDevice device, VkFormat for
     return image;
 }
 
+//Create image and upload it via a staging buffer
 AllocatedImage createImage(void* data, VmaAllocator allocator, VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent, VmaMemoryUsage memUsage, VkMemoryPropertyFlags memFlags)
 {
     size_t dataSize = extent.depth * extent.width * extent.height * 4;
@@ -70,6 +72,7 @@ AllocatedImage createImage(void* data, VmaAllocator allocator, VkDevice device, 
     return image;
 }
 
+//Create image view for image
 VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
     VkImageViewCreateInfo viewInfo{};
@@ -92,6 +95,7 @@ VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkI
     return imageView;
 };
 
+//Change layout of image
 void transitionImage(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout)
 {
     VkImageMemoryBarrier2 imageBarrier{ .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 };
@@ -127,6 +131,7 @@ void transitionImage(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout
     vkCmdPipelineBarrier2(commandBuffer, &depInfo);
 }
 
+//Extract the memory type from VKPhysicalDeviceMemoryProperties
 uint32_t findMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
@@ -139,6 +144,7 @@ uint32_t findMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t
     throw std::runtime_error("Failed to find suitable memory type!");
 };
 
+//Create a temporary 
 VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool)
 {
     VkCommandBufferAllocateInfo allocInfo{};
