@@ -144,7 +144,7 @@ uint32_t findMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t
     throw std::runtime_error("Failed to find suitable memory type!");
 };
 
-//Create a temporary 
+//Create a temporary command buffer for executing commands outside of the rendering loop
 VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool)
 {
     VkCommandBufferAllocateInfo allocInfo{};
@@ -165,6 +165,7 @@ VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPo
     return commandBuffer;
 };
 
+//Delete a command buffer and submit the commands in it
 void endSingleTimeCommands(VkDevice device, VkQueue graphicsQueue, VkCommandPool commandPool, VkCommandBuffer commandBuffer)
 {
     vkEndCommandBuffer(commandBuffer);
@@ -197,6 +198,7 @@ VkShaderModule createShaderModule(VkDevice device, const std::vector<char>& code
     return shaderModule;
 }
 
+//Generate an image create info struct
 VkImageCreateInfo imageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent)
 {
     VkImageCreateInfo info = {};
@@ -216,6 +218,7 @@ VkImageCreateInfo imageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags,
     return info;
 }
 
+//Generate an image view create info struct
 VkImageViewCreateInfo imageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags)
 {
     VkImageViewCreateInfo info = {};
@@ -234,6 +237,7 @@ VkImageViewCreateInfo imageViewCreateInfo(VkFormat format, VkImage image, VkImag
     return info;
 }
 
+//Generate a depth stencil create info struct
 VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo(bool depthTest, bool depthWrite, VkCompareOp compareOp)
 {
     VkPipelineDepthStencilStateCreateInfo info = {};
@@ -249,6 +253,7 @@ VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo(bool depthTest, boo
     return info;
 }
 
+//Create a buffer using VMA
 AllocatedBuffer createBuffer(VmaAllocator allocator, size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags allocFlags, VkMemoryPropertyFlags requiredFlags)
 {
     VkBufferCreateInfo bufferInfo = {};
