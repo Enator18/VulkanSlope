@@ -22,13 +22,16 @@
 		}                                                           \
 	} while (0)
 
+//Initialize base renderer structures
 void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t width, uint32_t height)
 {
+	//Create vulkan instance and window surface
 	instance = vkbInstance.instance;
 	this->surface = surface;
 
 	messenger = vkbInstance.debug_messenger;
 	
+	//Initialize the GPU device
 	vkb::PhysicalDeviceSelector selector{ vkbInstance };
 
 	auto devRet = selector.set_surface(*surface)
@@ -45,19 +48,22 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
 	graphicsQueueFamily = device.get_queue_index(vkb::QueueType::graphics).value();
 
+	//Create the memory allocator
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = physicalDevice;
 	allocatorInfo.device = device;
 	allocatorInfo.instance = instance;
 	vmaCreateAllocator(&allocatorInfo, &allocator);
 
+	//Init functions for all sub-sections of the renderer
 	createSwapchain(width, height);
 	initCommands();
 	initRenderpass();
 	initFramebuffers();
 	initSyncStructures();
 	initDescriptors();
-
+	
+	//Create render pipeline
 	VertexInputDescription inputDescription = Vertex::getInputDescription();
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -75,6 +81,7 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	renderPipeline = buildRenderPipeline(device, renderPass, width, height, pipelineLayout, inputDescription);
 };
 
+//Create swapchain and depth image and fetch swapchain images and image views
 void Renderer::createSwapchain(uint32_t width, uint32_t height)
 {
 	this->width = width;
@@ -110,6 +117,7 @@ void Renderer::createSwapchain(uint32_t width, uint32_t height)
 	swapchainImageFormat = swapchain.image_format;
 };
 
+//Callback function for when the window is resized
 void Renderer::onResized(uint32_t width, uint32_t height)
 {
 	this->width = width;
@@ -117,6 +125,7 @@ void Renderer::onResized(uint32_t width, uint32_t height)
 	resized = true;
 }
 
+//Delete swapchain
 void Renderer::cleanupSwapchain()
 {
 	vkDestroyImageView(device, depthImageView, nullptr);
@@ -135,6 +144,7 @@ void Renderer::cleanupSwapchain()
 	vkDestroySwapchainKHR(device, swapchain, nullptr);
 }
 
+//Delete and recreate the swapchain for when the window is resized. If minimized, wait.
 void Renderer::updateSwapchain()
 {
 	if (width == 0 || height == 0)
@@ -149,6 +159,7 @@ void Renderer::updateSwapchain()
 	initFramebuffers();
 }
 
+//Create command buffer and command pool
 void Renderer::initCommands()
 {
 	VkCommandPoolCreateInfo commandPoolInfo = {};
@@ -183,6 +194,7 @@ void Renderer::initCommands()
 	}
 }
 
+//Create renderpass
 void Renderer::initRenderpass()
 {
 	VkAttachmentDescription colorAttachment = {};
@@ -235,6 +247,7 @@ void Renderer::initRenderpass()
 	}
 }
 
+//Create the framebuffers and attach the swapchain and depth image views
 void Renderer::initFramebuffers()
 {
 	VkFramebufferCreateInfo fbInfo = {};
@@ -264,6 +277,7 @@ void Renderer::initFramebuffers()
 	}
 }
 
+//Create the fences and semaphores
 void Renderer::initSyncStructures()
 {
 	VkFenceCreateInfo fenceCreateInfo = {};
@@ -297,8 +311,10 @@ void Renderer::initSyncStructures()
 	}
 }
 
+//Create the camera buffer and instance buffer and set up their descriptor set layout
 void Renderer::initDescriptors()
 {
+	//Create buffers
 	for (int i = 0; i < FRAME_OVERLAP; i++)
 	{
 		frames[i].cameraBuffer = createBuffer(allocator, sizeof(Camera), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -310,6 +326,7 @@ void Renderer::initDescriptors()
 			});
 	}
 
+	//Create bindings
 	VkDescriptorSetLayoutBinding cameraBufferBinding = {};
 	cameraBufferBinding.binding = 0;
 	cameraBufferBinding.descriptorCount = 1;
@@ -326,6 +343,7 @@ void Renderer::initDescriptors()
 
 	VkDescriptorSetLayoutBinding bindings[] = {cameraBufferBinding, instanceBufferBinding};
 
+	//Create descriptor set layout
 	VkDescriptorSetLayoutCreateInfo setInfo = {};
 	setInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	setInfo.pNext = nullptr;
@@ -371,10 +389,13 @@ void Renderer::deleteMesh(Mesh& mesh)
 	vmaDestroyBuffer(allocator, mesh.indexBuffer.buffer, mesh.indexBuffer.allocation);
 }
 
+//Main draw function. Called every frame.
 void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 {
+	//Set up commands
 	VkCommandBuffer& commandBuffer = getCurrentFrame().commandBuffer;
 
+	//Synchronize and get images
 	VK_CHECK(vkWaitForFences(device, 1, &getCurrentFrame().renderFence, true, 1000000000));
 
 	getCurrentFrame().descriptorAllocator.clearPools(device);
@@ -393,6 +414,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 
 	VK_CHECK(vkResetCommandBuffer(commandBuffer, 0));
 
+	//Begin commands and renderpass
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = 0;
@@ -421,6 +443,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+	//Upload camera and instance matrices to the GPU
 	void* cameraData;
 	vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &cameraData);
 	memcpy(cameraData, &camera, sizeof(Camera));
@@ -438,6 +461,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	memcpy(instanceData, transforms.data(), sizeof(glm::mat4) * transforms.size());
 	vmaUnmapMemory(allocator, getCurrentFrame().instanceBuffer.allocation);
 
+	//Create descriptor set
 	VkDescriptorSet globalDescriptor = getCurrentFrame().descriptorAllocator.allocate(device, globalSetLayout);
 
 	DescriptorWriter writer = DescriptorWriter{};
@@ -448,6 +472,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalDescriptor, 0, nullptr);
 
+	//Set up window settings
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
@@ -465,8 +490,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderPipeline);
 
-	//Draw Commands Here
-
+	//Main draw loop
 	for (int i = 0; i < instances.size(); i++)
 	{
 		MeshInstance& instance = instances[i];
@@ -478,6 +502,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 		vkCmdDrawIndexed(commandBuffer, instance.mesh->indices.size(), 1, 0, 0, i);
 	}
 
+	//End renderpass and commands
 	vkCmdEndRenderPass(commandBuffer);
 
 	VK_CHECK(vkEndCommandBuffer(commandBuffer));
@@ -486,6 +511,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submit.pNext = nullptr;
 
+	//Submit commands
 	VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
 	submit.pWaitDstStageMask = &waitStage;
@@ -498,6 +524,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 
 	VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submit, getCurrentFrame().renderFence));
 
+	//Draw to screen
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.pNext = nullptr;
@@ -521,6 +548,7 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	frameNumber += 1;
 }
 
+//Delete everything
 void Renderer::cleanup()
 {
 	vkDeviceWaitIdle(device);
