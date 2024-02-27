@@ -79,6 +79,25 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	}
 
 	renderPipeline = buildRenderPipeline(device, renderPass, width, height, pipelineLayout, inputDescription);
+
+	//Create Error Texture
+	uint32_t black = 0x000000FF;
+	uint32_t magenta = 0xFF00FFFF;
+	std::array<uint32_t, 16 * 16> pixels;
+	for (int x = 0; x < 16; x++)
+	{
+		for (int y = 0; y < 16; y++)
+		{
+			pixels[y * 16 + x] = ((x % 2) ^ (y % 2)) ? magenta : black;
+		}
+	}
+
+	errorTexture = createImage(pixels.data(), allocator, device, mainCommandPool, graphicsQueue, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, VkExtent3D{16, 16, 1}, VMA_MEMORY_USAGE_GPU_ONLY, 0);
+
+	VkSamplerCreateInfo samplerInfo = { .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+	samplerInfo.magFilter = VK_FILTER_NEAREST;
+	samplerInfo.minFilter = VK_FILTER_NEAREST;
+	vkCreateSampler(device, &samplerInfo, nullptr, &defaultSampler);
 };
 
 //Create swapchain and depth image and fetch swapchain images and image views
@@ -342,6 +361,13 @@ void Renderer::initDescriptors()
 	instanceBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 	VkDescriptorSetLayoutBinding bindings[] = {cameraBufferBinding, instanceBufferBinding};
+
+	VkDescriptorSetLayoutBinding textureBinding = {};
+	textureBinding.binding = 0;
+	textureBinding.descriptorCount = 1;
+	textureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+	textureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	//Create descriptor set layout
 	VkDescriptorSetLayoutCreateInfo setInfo = {};

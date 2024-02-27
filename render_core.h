@@ -41,6 +41,8 @@ private:
 	VkPipeline renderPipeline;
 	VkPipelineLayout pipelineLayout;
 
+	VkCommandPool mainCommandPool;
+
 	VmaAllocator allocator;
 	DeletionQueue mainDeletionQueue;
 
@@ -53,6 +55,12 @@ private:
 
 	FrameData frames[FRAME_OVERLAP];
 	uint32_t frameNumber = 0;
+
+	AllocatedImage errorTexture;
+
+	VkSampler defaultSampler;
+
+	VkDescriptorSetLayout textureDescriptorLayout;
 
 	FrameData& getCurrentFrame()
 	{
