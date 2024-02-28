@@ -56,11 +56,12 @@ private:
 	FrameData frames[FRAME_OVERLAP];
 	uint32_t frameNumber = 0;
 
+	VkImageView errorTexView;
 	AllocatedImage errorTexture;
 
 	VkSampler defaultSampler;
 
-	VkDescriptorSetLayout textureDescriptorLayout;
+	VkDescriptorSetLayout textureSetLayout;
 
 	FrameData& getCurrentFrame()
 	{

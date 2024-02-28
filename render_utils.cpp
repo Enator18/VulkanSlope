@@ -39,7 +39,7 @@ AllocatedImage createImage(VmaAllocator allocator, VkDevice device, VkFormat for
 AllocatedImage createImage(void* data, VmaAllocator allocator, VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent, VmaMemoryUsage memUsage, VkMemoryPropertyFlags memFlags)
 {
     size_t dataSize = extent.depth * extent.width * extent.height * 4;
-    AllocatedBuffer uploadBuffer = createBuffer(allocator, dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, 0);
+    AllocatedBuffer uploadBuffer = createBuffer(allocator, dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
     
     void* uploadData;
     vmaMapMemory(allocator, uploadBuffer.allocation, &uploadData);

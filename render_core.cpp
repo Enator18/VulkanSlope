@@ -98,6 +98,8 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	samplerInfo.magFilter = VK_FILTER_NEAREST;
 	samplerInfo.minFilter = VK_FILTER_NEAREST;
 	vkCreateSampler(device, &samplerInfo, nullptr, &defaultSampler);
+
+	errorTexView = createImageView(device, errorTexture.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 };
 
 //Create swapchain and depth image and fetch swapchain images and image views
@@ -378,11 +380,21 @@ void Renderer::initDescriptors()
 	setInfo.flags = 0;
 	setInfo.pBindings = &bindings[0];
 
+	VkDescriptorSetLayoutCreateInfo texSetInfo = {};
+	texSetInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	texSetInfo.pNext = nullptr;
+
+	texSetInfo.bindingCount = 1;
+	texSetInfo.flags = 0;
+	texSetInfo.pBindings = &textureBinding;
+
 	vkCreateDescriptorSetLayout(device, &setInfo, nullptr, &globalSetLayout);
+	vkCreateDescriptorSetLayout(device, &texSetInfo, nullptr, &textureSetLayout);
 
 	mainDeletionQueue.push_function([&]()
 		{
 			vkDestroyDescriptorSetLayout(device, globalSetLayout, nullptr);
+			vkDestroyDescriptorSetLayout(device, textureSetLayout, nullptr);
 		});
 
 	for (int i = 0; i < FRAME_OVERLAP; i++)
@@ -390,7 +402,8 @@ void Renderer::initDescriptors()
 		std::vector<DescriptorAllocator::PoolSizeRatio> frameSizes =
 		{
 			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 }
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}
 		};
 
 		frames[i].descriptorAllocator = DescriptorAllocator{};
@@ -490,10 +503,16 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	//Create descriptor set
 	VkDescriptorSet globalDescriptor = getCurrentFrame().descriptorAllocator.allocate(device, globalSetLayout);
 
+	VkDescriptorSet errorTexDescriptor = getCurrentFrame().descriptorAllocator.allocate(device, textureSetLayout);
+
 	DescriptorWriter writer = DescriptorWriter{};
 	writer.writeBuffer(0, getCurrentFrame().cameraBuffer.buffer, sizeof(Camera), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 	writer.writeBuffer(1, getCurrentFrame().instanceBuffer.buffer, sizeof(MeshInstance) * MAX_OBJECTS, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 	writer.updateSet(device, globalDescriptor);
+
+	DescriptorWriter texWriter = DescriptorWriter{};
+	texWriter.writeImage(0, errorTexView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+	texWriter.updateSet(device, errorTexDescriptor);
 
 
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalDescriptor, 0, nullptr);
