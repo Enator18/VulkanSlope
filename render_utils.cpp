@@ -129,7 +129,7 @@ void transitionImage(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout
     depInfo.pImageMemoryBarriers = &imageBarrier;
 
     vkCmdPipelineBarrier2(commandBuffer, &depInfo);
-}
+};
 
 //Extract the memory type from VKPhysicalDeviceMemoryProperties
 uint32_t findMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter, VkMemoryPropertyFlags properties)

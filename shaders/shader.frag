@@ -6,7 +6,7 @@ layout(location = 2) in vec3 fragNormal;
 
 layout(location = 0) out vec4 outFragColor;
 
-layout(binding = 0) uniform sampler2D errorTexture;
+layout(set = 1, binding = 0) uniform sampler2D errorTexture;
 
 void main()
 {

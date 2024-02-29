@@ -66,10 +66,12 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	//Create render pipeline
 	VertexInputDescription inputDescription = Vertex::getInputDescription();
 
+	std::vector<VkDescriptorSetLayout> setLayouts = {globalSetLayout, textureSetLayout};
+
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 1;
-	pipelineLayoutInfo.pSetLayouts = &globalSetLayout;
+	pipelineLayoutInfo.setLayoutCount = 2;
+	pipelineLayoutInfo.pSetLayouts = &setLayouts[0];
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 	pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
@@ -188,6 +190,16 @@ void Renderer::initCommands()
 	commandPoolInfo.pNext = nullptr;
 	commandPoolInfo.queueFamilyIndex = graphicsQueueFamily;
 	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+	if (vkCreateCommandPool(device, &commandPoolInfo, nullptr, &mainCommandPool) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create command pool");
+	}
+
+	mainDeletionQueue.push_function([=]()
+		{
+			vkDestroyCommandPool(device, mainCommandPool, nullptr);
+		});
 
 	for (int i = 0; i < FRAME_OVERLAP; i++)
 	{
