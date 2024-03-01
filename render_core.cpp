@@ -35,7 +35,7 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	vkb::PhysicalDeviceSelector selector{ vkbInstance };
 
 	auto devRet = selector.set_surface(*surface)
-		.set_minimum_version(1, 1)
+		.set_minimum_version(1, 3)
 		.prefer_gpu_device_type()
 		.add_required_extension("VK_KHR_shader_draw_parameters")
 		.select();
@@ -83,8 +83,8 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	renderPipeline = buildRenderPipeline(device, renderPass, width, height, pipelineLayout, inputDescription);
 
 	//Create Error Texture
-	uint32_t black = 0x000000FF;
-	uint32_t magenta = 0xFF00FFFF;
+	uint32_t black = 0xFF000000;
+	uint32_t magenta = 0xFFFF00FF;
 	std::array<uint32_t, 16 * 16> pixels;
 	for (int x = 0; x < 16; x++)
 	{
@@ -526,8 +526,10 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	texWriter.writeImage(0, errorTexView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 	texWriter.updateSet(device, errorTexDescriptor);
 
+	std::vector<VkDescriptorSet> descriptorSets = { globalDescriptor, errorTexDescriptor };
 
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalDescriptor, 0, nullptr);
+
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2, &descriptorSets[0], 0, nullptr);
 
 	//Set up window settings
 	VkViewport viewport{};

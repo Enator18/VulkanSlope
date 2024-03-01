@@ -47,7 +47,7 @@ void SlopeGame::init()
 
 	auto instRet = builder.set_app_name("Slope")
 		.request_validation_layers(validation)
-		.require_api_version(1, 1, 0)
+		.require_api_version(1, 3, 0)
 		.use_default_debug_messenger()
 		.build();
 
