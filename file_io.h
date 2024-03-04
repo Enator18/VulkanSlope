@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <filesystem>
+#include <stb_image.h>
 
 #include "mesh.h"
 
@@ -23,3 +24,4 @@ struct MeshAsset
 
 std::vector<char> readFile(const std::string& fileName);
 std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem::path filePath);
+std::vector<uint32_t> loadImage(std::string fileName);

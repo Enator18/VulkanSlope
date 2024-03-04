@@ -8,6 +8,8 @@
 #include <fastgltf/parser.hpp>
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 #include "file_io.h"
 #include "mesh.h"
@@ -149,3 +151,4 @@ std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem
 
     return meshes;
 }
+

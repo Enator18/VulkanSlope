@@ -34,10 +34,17 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	//Initialize the GPU device
 	vkb::PhysicalDeviceSelector selector{ vkbInstance };
 
+	VkPhysicalDeviceVulkan13Features features13 =
+	{
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+		.synchronization2 = true,
+	};
+
 	auto devRet = selector.set_surface(*surface)
 		.set_minimum_version(1, 3)
 		.prefer_gpu_device_type()
 		.add_required_extension("VK_KHR_shader_draw_parameters")
+		.set_required_features_13(features13)
 		.select();
 	physicalDevice = devRet.value();
 
@@ -102,6 +109,12 @@ void Renderer::init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t w
 	vkCreateSampler(device, &samplerInfo, nullptr, &defaultSampler);
 
 	errorTexView = createImageView(device, errorTexture.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+
+	mainDeletionQueue.push_function([=]() {
+		vmaDestroyImage(allocator, errorTexture.image, errorTexture.allocation);
+		vkDestroySampler(device, defaultSampler, nullptr);
+		vkDestroyImageView(device, errorTexView, nullptr);
+		});
 };
 
 //Create swapchain and depth image and fetch swapchain images and image views

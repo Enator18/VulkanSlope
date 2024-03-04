@@ -46,7 +46,7 @@ AllocatedImage createImage(void* data, VmaAllocator allocator, VkDevice device, 
     memcpy(uploadData, data, dataSize);
     vmaUnmapMemory(allocator, uploadBuffer.allocation);
 
-    AllocatedImage image = createImage(allocator, device, format, usageFlags, extent, memUsage, memFlags);
+    AllocatedImage image = createImage(allocator, device, format, usageFlags | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, extent, memUsage, memFlags);
 
     VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
