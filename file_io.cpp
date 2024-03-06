@@ -152,3 +152,25 @@ std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem
     return meshes;
 }
 
+TextureAsset loadImage(const char* fileName, std::string name)
+{
+    int width, height, channels;
+
+    stbi_uc* imageData = stbi_load(fileName, &width, &height, &channels, STBI_rgb_alpha);
+
+    std::vector<uint32_t> pixels((width * height * channels) / sizeof(uint32_t));
+
+    memcpy(pixels.data(), imageData, pixels.size() * sizeof(uint32_t));
+
+    TextureAsset asset;
+
+    asset.name = name;
+
+    asset.width = width;
+    asset.height = height;
+
+    asset.data = pixels;
+
+    return asset;
+}
+

@@ -67,6 +67,8 @@ void SlopeGame::init()
 
 	std::optional<std::vector<std::shared_ptr<MeshAsset>>> models = loadModel("models/monkeyhead.glb");
 
+	TextureAsset stone = loadImage("textures/stonetexture.png", "stone");
+
 	for (std::shared_ptr<MeshAsset> asset : models.value())
 	{
 		renderer.uploadMesh(asset.get()->mesh);
