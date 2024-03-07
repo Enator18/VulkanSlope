@@ -69,6 +69,8 @@ void SlopeGame::init()
 
 	TextureAsset stone = loadImage("textures/stonetexture.png", "stone");
 
+	renderer.uploadTexture(stone.data, stone.width, stone.height);
+
 	for (std::shared_ptr<MeshAsset> asset : models.value())
 	{
 		renderer.uploadMesh(asset.get()->mesh);

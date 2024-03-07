@@ -17,6 +17,7 @@ public:
 	void init(vkb::Instance vkbInstance, VkSurfaceKHR* surface, uint32_t width, uint32_t height);
 	void uploadMesh(Mesh& mesh);
 	void deleteMesh(Mesh& mesh);
+	void uploadTexture(std::vector<uint32_t> pixels, uint32_t width, uint32_t height);
 	void drawFrame(std::vector<MeshInstance>& instances, Camera camera);
 	void onResized(uint32_t width, uint32_t height);
 	void cleanup();
@@ -63,12 +64,15 @@ private:
 
 	VkDescriptorSetLayout textureSetLayout;
 
+	std::vector<TextureImage> textures;
+
 	FrameData& getCurrentFrame()
 	{
 		return frames[frameNumber % FRAME_OVERLAP];
 	}
 
 	void createSwapchain(uint32_t width, uint32_t height);
+	void deleteTexture(TextureImage texture);
 	void updateSwapchain();
 	void cleanupSwapchain();
 	void initCommands();
