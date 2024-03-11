@@ -72,7 +72,6 @@ private:
 	}
 
 	void createSwapchain(uint32_t width, uint32_t height);
-	void deleteTexture(TextureImage texture);
 	void updateSwapchain();
 	void cleanupSwapchain();
 	void initCommands();

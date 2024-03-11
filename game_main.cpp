@@ -107,8 +107,8 @@ bool SlopeGame::tick()
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
-	cameraTransform.rotation.x += (mouseY - ypos) * delta * MOUSE_SENSITIVITY;
-	cameraTransform.rotation.y += (mouseX - xpos) * delta * MOUSE_SENSITIVITY;
+	cameraTransform.rotation.x += (mouseY - ypos) * MOUSE_SENSITIVITY;
+	cameraTransform.rotation.y += (mouseX - xpos) * MOUSE_SENSITIVITY;
 
 	cameraTransform.rotation.x = std::clamp(cameraTransform.rotation.x, -90.0f, 90.0f);
 

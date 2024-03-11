@@ -142,7 +142,7 @@ void Renderer::createSwapchain(uint32_t width, uint32_t height)
 
 	swapchain = swapchainBuilder
 		.use_default_format_selection()
-		.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
+		.set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
 		.set_desired_extent(width, height)
 		.build()
 		.value();

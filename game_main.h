@@ -18,7 +18,7 @@ public:
 	bool tick();
 	void cleanup();
 private:
-	const float MOUSE_SENSITIVITY = 6;
+	const float MOUSE_SENSITIVITY = 0.1;
 	const float FLY_SPEED = 2;
 
 	GLFWwindow* window;
@@ -35,8 +35,9 @@ private:
 	std::vector<MeshAsset> assets;
 	std::vector<MeshInstance> instances;
 
-	int width = 800;
-	int height = 600;
+	int width = 960;
+	int height = 540;
+
 
 	double mouseX = 0, mouseY = 0;
 
