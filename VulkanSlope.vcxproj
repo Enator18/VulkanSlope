@@ -150,6 +150,7 @@ C:\VulkanSDK\1.3.261.1\Bin\glslc.exe shaders\shader.frag -o shaders\frag.spv</Co
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="entity.cpp" />
     <ClCompile Include="file_io.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math_utils.cpp" />
@@ -162,6 +163,7 @@ C:\VulkanSDK\1.3.261.1\Bin\glslc.exe shaders\shader.frag -o shaders\frag.spv</Co
     <ClCompile Include="VkBootstrap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="entity.h" />
     <ClInclude Include="file_io.h" />
     <ClInclude Include="math_utils.h" />
     <ClInclude Include="mesh.h" />

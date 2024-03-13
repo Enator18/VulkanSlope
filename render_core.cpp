@@ -453,7 +453,7 @@ void Renderer::deleteMesh(Mesh& mesh)
 	vmaDestroyBuffer(allocator, mesh.indexBuffer.buffer, mesh.indexBuffer.allocation);
 }
 
-void Renderer::uploadTexture(std::vector<uint32_t> pixels, uint32_t width, uint32_t height)
+uint32_t Renderer::uploadTexture(std::vector<uint32_t> pixels, uint32_t width, uint32_t height)
 {
 	AllocatedImage texture = createImage(pixels.data(), allocator, device, mainCommandPool, graphicsQueue, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, VkExtent3D{ width, height, 1 }, VMA_MEMORY_USAGE_GPU_ONLY, 0);
 
@@ -462,6 +462,8 @@ void Renderer::uploadTexture(std::vector<uint32_t> pixels, uint32_t width, uint3
 	TextureImage textureImage = { texture, textureView };
 
 	textures.push_back(textureImage);
+
+	return textures.size() - 1;
 }
 
 //Main draw function. Called every frame.
@@ -539,23 +541,12 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	//Create descriptor set
 	VkDescriptorSet globalDescriptor = getCurrentFrame().descriptorAllocator.allocate(device, globalSetLayout);
 
-	VkDescriptorSet texDescriptor = getCurrentFrame().descriptorAllocator.allocate(device, textureSetLayout);
-
 	DescriptorWriter writer = DescriptorWriter{};
 	writer.writeBuffer(0, getCurrentFrame().cameraBuffer.buffer, sizeof(Camera), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 	writer.writeBuffer(1, getCurrentFrame().instanceBuffer.buffer, sizeof(MeshInstance) * MAX_OBJECTS, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 	writer.updateSet(device, globalDescriptor);
 
-	TextureImage texture = textures[0];
-
-	DescriptorWriter texWriter = DescriptorWriter{};
-	texWriter.writeImage(0, texture.textureView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-	texWriter.updateSet(device, texDescriptor);
-
-	std::vector<VkDescriptorSet> descriptorSets = { globalDescriptor, texDescriptor };
-
-
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2, &descriptorSets[0], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalDescriptor, 0, nullptr);
 
 	//Set up window settings
 	VkViewport viewport{};
@@ -579,6 +570,16 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	for (int i = 0; i < instances.size(); i++)
 	{
 		MeshInstance& instance = instances[i];
+
+		TextureImage texture = textures[instance.materialIndex];
+
+		VkDescriptorSet texDescriptor = getCurrentFrame().descriptorAllocator.allocate(device, textureSetLayout);
+
+		DescriptorWriter texWriter = DescriptorWriter{};
+		texWriter.writeImage(0, texture.textureView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		texWriter.updateSet(device, texDescriptor);
+
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &texDescriptor, 0, nullptr);
 
 		VkDeviceSize offsets[] = { 0 };
 

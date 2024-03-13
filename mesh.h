@@ -70,4 +70,5 @@ struct MeshInstance
 {
     Mesh* mesh;
     Transform transform;
+    uint32_t materialIndex;
 };
