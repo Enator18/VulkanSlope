@@ -73,6 +73,14 @@ void SlopeGame::init()
 		assets.push_back(*asset.get());
 	}
 
+	std::optional<std::vector<std::shared_ptr<MeshAsset>>> models2 = loadModel("models/cube.glb");
+
+	for (std::shared_ptr<MeshAsset> asset : models2.value())
+	{
+		renderer.uploadMesh(asset.get()->mesh);
+		assets.push_back(*asset.get());
+	}
+
 	TextureAsset stone = loadImage("textures/stonetexture.png", "stone");
 	TextureAsset dirt = loadImage("textures/dirt.png", "dirt");
 
@@ -82,8 +90,11 @@ void SlopeGame::init()
 	MeshInstance instance = { &assets[0].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, stoneIndex };
 	MeshInstance instance2 = { &assets[0].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, dirtIndex };
 
+	MeshInstance instance3 = { &assets[1].mesh, {glm::vec3(3.0, 0.0, 0.0), glm::vec3(0.0f, 45.0f, 0.0f)}, dirtIndex};
+
 	instances.push_back(instance);
 	instances.push_back(instance2);
+	instances.push_back(instance3);
 
 	cameraTransform.position = glm::vec3(-8.0, 0.0, 0.0);
 
@@ -136,6 +147,8 @@ bool SlopeGame::tick()
 	{
 		cameraTransform.position += glm::vec3(glm::vec4(0.0, FLY_SPEED * delta, 0.0, 1.0) * cameraTransform.getRotationMatrix());
 	}
+
+	instances[2].transform.rotation.x += 25 * delta;
 
 	glm::mat4 view = glm::lookAt(cameraTransform.position, cameraTransform.position + glm::vec3(glm::vec4(1, 0, 0, 1) * cameraTransform.getRotationMatrix()), glm::vec3(glm::vec4(0, 0, 1, 1) * cameraTransform.getRotationMatrix()));
 	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 40.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
