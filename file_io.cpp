@@ -10,9 +10,13 @@
 #include <fastgltf/types.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <rapidjson/document.h>
 
 #include "file_io.h"
 #include "mesh.h"
+#include "entity.h"
+
+using namespace rapidjson;
 
 std::vector<char> readFile(const std::string& fileName)
 {
@@ -172,5 +176,16 @@ TextureAsset loadImage(const char* fileName, std::string name)
     asset.data = pixels;
 
     return asset;
+}
+
+Entity loadScene(const char* json)
+{
+    Document document;
+    document.Parse(json);
+
+    for (auto& v : document.GetObject())
+    {
+
+    }
 }
 
