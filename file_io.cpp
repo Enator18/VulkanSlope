@@ -11,6 +11,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <rapidjson/document.h>
+#include <iostream>
 
 #include "file_io.h"
 #include "mesh.h"
@@ -178,14 +179,18 @@ TextureAsset loadImage(const char* fileName, std::string name)
     return asset;
 }
 
-Entity loadScene(const char* json)
+std::vector<std::unique_ptr<Entity>> loadScene(const char* json)
 {
     Document document;
     document.Parse(json);
 
+    std::vector<std::unique_ptr<Entity>> scene;
+
     for (auto& v : document.GetObject())
     {
-
+        //std::cout << v.value.GetString() << std::endl;
     }
+
+    return scene;
 }
 

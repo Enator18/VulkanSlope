@@ -5,7 +5,7 @@ void Entity::begin()
 
 }
 
-void Entity::tick()
+void Entity::tick(float delta)
 {
 
 }

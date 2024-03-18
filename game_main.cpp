@@ -87,6 +87,8 @@ void SlopeGame::init()
 	uint32_t stoneIndex = renderer.uploadTexture(stone.data, stone.width, stone.height);
 	uint32_t dirtIndex = renderer.uploadTexture(dirt.data, dirt.width, dirt.height);
 
+	std::vector<std::unique_ptr<Entity>> testScene = loadScene("scenes/testmap.json");
+
 	MeshInstance instance = { &assets[0].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, stoneIndex };
 	MeshInstance instance2 = { &assets[0].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, dirtIndex };
 

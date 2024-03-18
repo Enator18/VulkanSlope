@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "mesh.h"
+#include "entity.h"
 
 struct GeoSurface
 {
@@ -31,3 +32,4 @@ struct TextureAsset
 std::vector<char> readFile(const std::string& fileName);
 std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem::path filePath);
 TextureAsset loadImage(const char* fileName, std::string name);
+std::vector<std::unique_ptr<Entity>> loadScene(const char* json);

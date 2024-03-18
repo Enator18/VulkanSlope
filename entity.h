@@ -8,11 +8,9 @@
 class Entity
 {
 public:
-	void begin();
-	void tick();
+	virtual void begin();
+	virtual void tick(float delta);
 private:
 	Transform transform;
 	MeshInstance mesh;
-	std::vector<Entity> children;
-	Entity* parent;
 };
