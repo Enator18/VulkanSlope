@@ -12,6 +12,7 @@
 #include <stb_image.h>
 #include <rapidjson/document.h>
 #include <iostream>
+#include <string>
 
 #include "file_io.h"
 #include "mesh.h"
@@ -19,24 +20,18 @@
 
 using namespace rapidjson;
 
-std::vector<char> readFile(const std::string& fileName)
+std::string readFile(const std::string& filePath)
 {
-    std::ifstream file(fileName, std::ios::ate | std::ios::binary);
+    const std::ifstream inputStream(filePath, std::ios_base::binary);
 
-    if (!file.is_open())
-    {
-        throw std::runtime_error("failed to open file!");
+    if (inputStream.fail()) {
+        throw std::runtime_error("Failed to open file");
     }
 
-    size_t fileSize = (size_t)file.tellg();
-    std::vector<char> buffer(fileSize);
+    std::stringstream buffer;
+    buffer << inputStream.rdbuf();
 
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-
-    file.close();
-
-    return buffer;
+    return buffer.str();
 }
 
 std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem::path filePath)
@@ -157,11 +152,11 @@ std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem
     return meshes;
 }
 
-TextureAsset loadImage(const char* fileName, std::string name)
+TextureAsset loadImage(const char* filePath, std::string name)
 {
     int width, height, channels;
 
-    stbi_uc* imageData = stbi_load(fileName, &width, &height, &channels, STBI_rgb_alpha);
+    stbi_uc* imageData = stbi_load(filePath, &width, &height, &channels, STBI_rgb_alpha);
 
     std::vector<uint32_t> pixels((width * height * channels) / sizeof(uint32_t));
 
@@ -179,16 +174,27 @@ TextureAsset loadImage(const char* fileName, std::string name)
     return asset;
 }
 
-std::vector<std::unique_ptr<Entity>> loadScene(const char* json)
+std::vector<std::unique_ptr<Entity>> loadScene(std::string filePath)
 {
+    std::string json = readFile("scenes/testmap.json");
+
     Document document;
-    document.Parse(json);
+    document.Parse(json.c_str());
 
     std::vector<std::unique_ptr<Entity>> scene;
 
-    for (auto& v : document.GetObject())
+    int i = 0;
+
+    for (auto& member : document.GetObject())
     {
-        //std::cout << v.value.GetString() << std::endl;
+        scene.emplace_back();
+        
+        std::string type = member.value["type"].GetString();
+
+        scene.back()->setName(member.name.GetString());
+
+
+        i++;
     }
 
     return scene;

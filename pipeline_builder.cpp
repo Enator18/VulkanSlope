@@ -10,8 +10,8 @@ VkPipeline buildRenderPipeline(VkDevice device, VkRenderPass renderPass, uint32_
     auto vertShaderCode = readFile("shaders/vert.spv");
     auto fragShaderCode = readFile("shaders/frag.spv");
 
-    VkShaderModule vertShaderModule = createShaderModule(device, vertShaderCode);
-    VkShaderModule fragShaderModule = createShaderModule(device, fragShaderCode);
+    VkShaderModule vertShaderModule = createShaderModule(device, std::vector(vertShaderCode.begin(), vertShaderCode.end()));
+    VkShaderModule fragShaderModule = createShaderModule(device, std::vector(fragShaderCode.begin(), fragShaderCode.end()));
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

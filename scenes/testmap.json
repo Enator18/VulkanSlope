@@ -1,9 +1,11 @@
 {
   "ent1": {
-    "type": "Entity"
+    "type": "Entity",
+    "mesh_instance": 0
   },
 
   "ent2": {
-    "type": "Entity"
+    "type": "Entity",
+    "mesh_instance": 1
   }
 }
