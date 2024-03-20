@@ -13,6 +13,7 @@
 #include <rapidjson/document.h>
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include "file_io.h"
 #include "mesh.h"
@@ -183,18 +184,24 @@ std::vector<std::unique_ptr<Entity>> loadScene(std::string filePath)
 
     std::vector<std::unique_ptr<Entity>> scene;
 
-    int i = 0;
-
     for (auto& member : document.GetObject())
-    {
-        scene.emplace_back();
-        
+    {   
         std::string type = member.value["type"].GetString();
 
-        scene.back()->setName(member.name.GetString());
+        auto& transformValue = member.value["transform"];
 
+        Transform transform = {};
 
-        i++;
+        transform.position.x = transformValue["position"].GetArray()[0].GetFloat();
+        transform.position.y = transformValue["position"].GetArray()[1].GetFloat();
+        transform.position.z = transformValue["position"].GetArray()[2].GetFloat();
+
+        //Will be replaced with dictionary system to select type later
+        std::unique_ptr<Entity> entity = std::make_unique<Entity>();
+
+        entity->setName(member.name.GetString());
+
+        scene.push_back(std::move(entity));
     }
 
     return scene;
