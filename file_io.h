@@ -29,7 +29,7 @@ struct TextureAsset
     std::vector<uint32_t> data;
 };
 
-std::string readFile(const std::string& filePath);
+std::string readFile(std::filesystem::path filePath);
 std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem::path filePath);
 TextureAsset loadImage(const char* filePath, std::string name);
-std::vector<std::unique_ptr<Entity>> loadScene(std::string filePath);
+std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath);

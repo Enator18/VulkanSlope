@@ -4,6 +4,7 @@
 #include <GLFW/glfw3native.h>
 #include <vector>
 #include <chrono>
+#include <unordered_map>
 
 #include "render_core.h"
 #include "render_types.h"
@@ -32,7 +33,7 @@ private:
 
 	Renderer renderer;
 
-	std::vector<MeshAsset> assets;
+	std::unordered_map<std::string, MeshAsset> assets;
 	std::vector<MeshInstance> instances;
 
 	int width = 960;

@@ -70,7 +70,7 @@ void SlopeGame::init()
 	for (std::shared_ptr<MeshAsset> asset : models.value())
 	{
 		renderer.uploadMesh(asset.get()->mesh);
-		assets.push_back(*asset.get());
+		assets.insert({ "monkeyhead", *asset.get() });
 	}
 
 	std::optional<std::vector<std::shared_ptr<MeshAsset>>> models2 = loadModel("models/cube.glb");
@@ -78,7 +78,7 @@ void SlopeGame::init()
 	for (std::shared_ptr<MeshAsset> asset : models2.value())
 	{
 		renderer.uploadMesh(asset.get()->mesh);
-		assets.push_back(*asset.get());
+		assets.insert({ "cube", *asset.get() });
 	}
 
 	TextureAsset stone = loadImage("textures/stonetexture.png", "stone");
@@ -89,10 +89,10 @@ void SlopeGame::init()
 
 	std::vector<std::unique_ptr<Entity>> testScene = loadScene("scenes/testmap.json");
 
-	MeshInstance instance = { &assets[0].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, stoneIndex };
-	MeshInstance instance2 = { &assets[0].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, dirtIndex };
+	MeshInstance instance = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, stoneIndex};
+	MeshInstance instance2 = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, dirtIndex};
 
-	MeshInstance instance3 = { &assets[1].mesh, {glm::vec3(3.0, 0.0, 0.0), glm::vec3(0.0f, 45.0f, 0.0f)}, dirtIndex};
+	MeshInstance instance3 = { &assets["cube"].mesh, {glm::vec3(3.0, 0.0, 0.0), glm::vec3(0.0f, 45.0f, 0.0f)}, dirtIndex};
 
 	instances.push_back(instance);
 	instances.push_back(instance2);

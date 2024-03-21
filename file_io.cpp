@@ -21,7 +21,7 @@
 
 using namespace rapidjson;
 
-std::string readFile(const std::string& filePath)
+std::string readFile(std::filesystem::path filePath)
 {
     const std::ifstream inputStream(filePath, std::ios_base::binary);
 
@@ -175,9 +175,9 @@ TextureAsset loadImage(const char* filePath, std::string name)
     return asset;
 }
 
-std::vector<std::unique_ptr<Entity>> loadScene(std::string filePath)
+std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath)
 {
-    std::string json = readFile("scenes/testmap.json");
+    std::string json = readFile(filePath);
 
     Document document;
     document.Parse(json.c_str());
@@ -192,14 +192,24 @@ std::vector<std::unique_ptr<Entity>> loadScene(std::string filePath)
 
         Transform transform = {};
 
-        transform.position.x = transformValue["position"].GetArray()[0].GetFloat();
-        transform.position.y = transformValue["position"].GetArray()[1].GetFloat();
-        transform.position.z = transformValue["position"].GetArray()[2].GetFloat();
+        transform.position.x = transformValue["position"][0].GetDouble();
+        transform.position.y = transformValue["position"][1].GetDouble();
+        transform.position.z = transformValue["position"][2].GetDouble();
+
+        transform.rotation.x = transformValue["rotation"][0].GetDouble();
+        transform.rotation.y = transformValue["rotation"][1].GetDouble();
+        transform.rotation.z = transformValue["rotation"][2].GetDouble();
+
+        transform.scale.x = transformValue["scale"][0].GetDouble();
+        transform.scale.y = transformValue["scale"][1].GetDouble();
+        transform.scale.z = transformValue["scale"][2].GetDouble();
 
         //Will be replaced with dictionary system to select type later
         std::unique_ptr<Entity> entity = std::make_unique<Entity>();
 
         entity->setName(member.name.GetString());
+
+        entity->setTransform(transform);
 
         scene.push_back(std::move(entity));
     }

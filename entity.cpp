@@ -19,3 +19,8 @@ std::string Entity::getName()
 {
 	return name;
 }
+
+void Entity::setTransform(Transform transform)
+{
+	this->transform = transform;
+}
