@@ -5,6 +5,7 @@
 #include <vector>
 #include <chrono>
 #include <unordered_map>
+#include <memory>
 
 #include "render_core.h"
 #include "render_types.h"
@@ -35,6 +36,7 @@ private:
 
 	std::unordered_map<std::string, MeshAsset> assets;
 	std::vector<MeshInstance> instances;
+	std::vector<std::unique_ptr<Entity>> mainScene;
 
 	int width = 960;
 	int height = 540;

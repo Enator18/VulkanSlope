@@ -87,7 +87,7 @@ void SlopeGame::init()
 	uint32_t stoneIndex = renderer.uploadTexture(stone.data, stone.width, stone.height);
 	uint32_t dirtIndex = renderer.uploadTexture(dirt.data, dirt.width, dirt.height);
 
-	std::vector<std::unique_ptr<Entity>> testScene = loadScene("scenes/testmap.json");
+	std::vector<std::unique_ptr<Entity>>mainScene = loadScene("scenes/testmap.json", assets);
 
 	MeshInstance instance = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, stoneIndex};
 	MeshInstance instance2 = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, dirtIndex};
@@ -157,16 +157,16 @@ bool SlopeGame::tick()
 
 	Camera camera = { view, projection };
 
-	renderer.drawFrame(instances, camera);
+	renderer.drawFrame(mainScene, camera);
 
 	return !glfwWindowShouldClose(window);
 }
 
 void SlopeGame::cleanup()
 {
-	for (MeshAsset asset : assets)
+	for (auto& element : assets)
 	{
-		renderer.deleteMesh(asset.mesh);
+		renderer.deleteMesh(element.second.mesh);
 	}
 
 	renderer.cleanup();

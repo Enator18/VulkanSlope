@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <memory>
 
 #include "render_core.h"
 #include "render_utils.h"
@@ -10,6 +11,7 @@
 #include "vk_mem_alloc.h"
 #include "pipeline_builder.h"
 #include "mesh.h"
+#include "entity.h"
 
 #define VK_CHECK(x)                                                 \
 	do                                                              \
@@ -467,7 +469,7 @@ uint32_t Renderer::uploadTexture(std::vector<uint32_t> pixels, uint32_t width, u
 }
 
 //Main draw function. Called every frame.
-void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
+void Renderer::drawFrame(std::vector<std::unique_ptr<Entity>>& scene, Camera camera)
 {
 	//Set up commands
 	VkCommandBuffer& commandBuffer = getCurrentFrame().commandBuffer;
@@ -528,9 +530,9 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 
 	std::vector<glm::mat4> transforms;
 
-	for (MeshInstance& instance : instances)
+	for (std::unique_ptr<Entity> &entity : scene)
 	{
-		transforms.push_back(instance.transform.getTransformMatrix());
+		transforms.push_back(entity->mesh.transform.getTransformMatrix());
 	}
 
 	void* instanceData;
@@ -567,9 +569,9 @@ void Renderer::drawFrame(std::vector<MeshInstance>& instances, Camera camera)
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderPipeline);
 
 	//Main draw loop
-	for (int i = 0; i < instances.size(); i++)
+	for (int i = 0; i < scene.size(); i++)
 	{
-		MeshInstance& instance = instances[i];
+		MeshInstance& instance = scene[i]->mesh;
 
 		TextureImage texture = textures[instance.materialIndex];
 

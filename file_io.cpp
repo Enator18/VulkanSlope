@@ -175,7 +175,7 @@ TextureAsset loadImage(const char* filePath, std::string name)
     return asset;
 }
 
-std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath)
+std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets)
 {
     std::string json = readFile(filePath);
 
@@ -207,9 +207,11 @@ std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath)
         //Will be replaced with dictionary system to select type later
         std::unique_ptr<Entity> entity = std::make_unique<Entity>();
 
-        entity->setName(member.name.GetString());
+        entity->name = member.name.GetString();
 
-        entity->setTransform(transform);
+        entity->transform = transform;
+
+        entity->mesh = { &assets[member.value["mesh"].GetString()].mesh, {}, 0 };
 
         scene.push_back(std::move(entity));
     }

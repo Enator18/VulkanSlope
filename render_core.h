@@ -7,6 +7,7 @@
 #include "VkBootstrap.h"
 #include "vk_mem_alloc.h"
 #include "mesh.h"
+#include "entity.h"
 
 constexpr unsigned int FRAME_OVERLAP = 2;
 constexpr unsigned int MAX_OBJECTS = 10000;
@@ -18,7 +19,7 @@ public:
 	void uploadMesh(Mesh& mesh);
 	void deleteMesh(Mesh& mesh);
 	uint32_t uploadTexture(std::vector<uint32_t> pixels, uint32_t width, uint32_t height);
-	void drawFrame(std::vector<MeshInstance>& instances, Camera camera);
+	void drawFrame(std::vector<std::unique_ptr<Entity>>& scene, Camera camera);
 	void onResized(uint32_t width, uint32_t height);
 	void cleanup();
 
