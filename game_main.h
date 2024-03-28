@@ -35,7 +35,7 @@ private:
 	Renderer renderer;
 
 	std::unordered_map<std::string, MeshAsset> assets;
-	std::vector<MeshInstance> instances;
+	std::unordered_map<std::string, TextureImage> textures;
 	std::vector<std::unique_ptr<Entity>> mainScene;
 
 	int width = 960;

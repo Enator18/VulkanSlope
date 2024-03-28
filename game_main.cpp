@@ -81,22 +81,18 @@ void SlopeGame::init()
 		assets.insert({ "cube", *asset.get() });
 	}
 
-	TextureAsset stone = loadImage("textures/stonetexture.png", "stone");
+	TextureAsset stone = loadImage("textures/stone.png", "stone");
 	TextureAsset dirt = loadImage("textures/dirt.png", "dirt");
 
-	uint32_t stoneIndex = renderer.uploadTexture(stone.data, stone.width, stone.height);
-	uint32_t dirtIndex = renderer.uploadTexture(dirt.data, dirt.width, dirt.height);
+	textures.insert({ "stone", renderer.uploadTexture(stone.data, stone.width, stone.height) });
+	textures.insert({ "dirt", renderer.uploadTexture(dirt.data, dirt.width, dirt.height) });
 
-	std::vector<std::unique_ptr<Entity>>mainScene = loadScene("scenes/testmap.json", assets);
+	mainScene = loadScene("scenes/testmap.json", assets, textures);
 
-	MeshInstance instance = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, stoneIndex};
-	MeshInstance instance2 = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, dirtIndex};
+	//MeshInstance instance = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, stoneIndex};
+	//MeshInstance instance2 = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, dirtIndex};
 
-	MeshInstance instance3 = { &assets["cube"].mesh, {glm::vec3(3.0, 0.0, 0.0), glm::vec3(0.0f, 45.0f, 0.0f)}, dirtIndex};
-
-	instances.push_back(instance);
-	instances.push_back(instance2);
-	instances.push_back(instance3);
+	//MeshInstance instance3 = { &assets["cube"].mesh, {glm::vec3(3.0, 0.0, 0.0), glm::vec3(0.0f, 45.0f, 0.0f)}, dirtIndex};	
 
 	cameraTransform.position = glm::vec3(-8.0, 0.0, 0.0);
 
@@ -150,8 +146,6 @@ bool SlopeGame::tick()
 		cameraTransform.position += glm::vec3(glm::vec4(0.0, FLY_SPEED * delta, 0.0, 1.0) * cameraTransform.getRotationMatrix());
 	}
 
-	instances[2].transform.rotation.x += 25 * delta;
-
 	glm::mat4 view = glm::lookAt(cameraTransform.position, cameraTransform.position + glm::vec3(glm::vec4(1, 0, 0, 1) * cameraTransform.getRotationMatrix()), glm::vec3(glm::vec4(0, 0, 1, 1) * cameraTransform.getRotationMatrix()));
 	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 40.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
 
@@ -167,6 +161,11 @@ void SlopeGame::cleanup()
 	for (auto& element : assets)
 	{
 		renderer.deleteMesh(element.second.mesh);
+	}
+
+	for (auto& element : textures)
+	{
+		renderer.deleteTexture(element.second);
 	}
 
 	renderer.cleanup();

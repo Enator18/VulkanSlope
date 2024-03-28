@@ -69,6 +69,6 @@ struct Mesh
 struct MeshInstance
 {
     Mesh* mesh;
+    TextureImage* texture;
     Transform transform;
-    uint32_t materialIndex;
 };

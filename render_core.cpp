@@ -455,7 +455,7 @@ void Renderer::deleteMesh(Mesh& mesh)
 	vmaDestroyBuffer(allocator, mesh.indexBuffer.buffer, mesh.indexBuffer.allocation);
 }
 
-uint32_t Renderer::uploadTexture(std::vector<uint32_t> pixels, uint32_t width, uint32_t height)
+TextureImage Renderer::uploadTexture(std::vector<uint32_t> pixels, uint32_t width, uint32_t height)
 {
 	AllocatedImage texture = createImage(pixels.data(), allocator, device, mainCommandPool, graphicsQueue, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, VkExtent3D{ width, height, 1 }, VMA_MEMORY_USAGE_GPU_ONLY, 0);
 
@@ -463,9 +463,13 @@ uint32_t Renderer::uploadTexture(std::vector<uint32_t> pixels, uint32_t width, u
 
 	TextureImage textureImage = { texture, textureView };
 
-	textures.push_back(textureImage);
+	return textureImage;
+}
 
-	return textures.size() - 1;
+void Renderer::deleteTexture(TextureImage& texture)
+{
+	vkDestroyImageView(device, texture.textureView, nullptr);
+	vmaDestroyImage(allocator, texture.texture.image, texture.texture.allocation);
 }
 
 //Main draw function. Called every frame.
@@ -532,7 +536,7 @@ void Renderer::drawFrame(std::vector<std::unique_ptr<Entity>>& scene, Camera cam
 
 	for (std::unique_ptr<Entity> &entity : scene)
 	{
-		transforms.push_back(entity->mesh.transform.getTransformMatrix());
+		transforms.push_back(entity->transform.getTransformMatrix());
 	}
 
 	void* instanceData;
@@ -573,12 +577,10 @@ void Renderer::drawFrame(std::vector<std::unique_ptr<Entity>>& scene, Camera cam
 	{
 		MeshInstance& instance = scene[i]->mesh;
 
-		TextureImage texture = textures[instance.materialIndex];
-
 		VkDescriptorSet texDescriptor = getCurrentFrame().descriptorAllocator.allocate(device, textureSetLayout);
 
 		DescriptorWriter texWriter = DescriptorWriter{};
-		texWriter.writeImage(0, texture.textureView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		texWriter.writeImage(0, instance.texture->textureView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 		texWriter.updateSet(device, texDescriptor);
 
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &texDescriptor, 0, nullptr);
@@ -640,12 +642,6 @@ void Renderer::drawFrame(std::vector<std::unique_ptr<Entity>>& scene, Camera cam
 void Renderer::cleanup()
 {
 	vkDeviceWaitIdle(device);
-
-	for (TextureImage texture : textures)
-	{
-		vkDestroyImageView(device, texture.textureView, nullptr);
-		vmaDestroyImage(allocator, texture.texture.image, texture.texture.allocation);
-	}
 	
 	mainDeletionQueue.flush();
 

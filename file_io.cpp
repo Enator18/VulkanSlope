@@ -153,11 +153,11 @@ std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem
     return meshes;
 }
 
-TextureAsset loadImage(const char* filePath, std::string name)
+TextureAsset loadImage(std::filesystem::path filePath, std::string name)
 {
     int width, height, channels;
 
-    stbi_uc* imageData = stbi_load(filePath, &width, &height, &channels, STBI_rgb_alpha);
+    stbi_uc* imageData = stbi_load(filePath.generic_string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
     std::vector<uint32_t> pixels((width * height * channels) / sizeof(uint32_t));
 
@@ -175,7 +175,7 @@ TextureAsset loadImage(const char* filePath, std::string name)
     return asset;
 }
 
-std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets)
+std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, -std::unordered_map<std::string, TextureImage>& textures)
 {
     std::string json = readFile(filePath);
 
@@ -211,7 +211,7 @@ std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, s
 
         entity->transform = transform;
 
-        entity->mesh = { &assets[member.value["mesh"].GetString()].mesh, {}, 0 };
+        entity->mesh = { &assets[member.value["mesh"].GetString()].mesh, &textures[member.value["texture"].GetString()], {}};
 
         scene.push_back(std::move(entity));
     }
