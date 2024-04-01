@@ -5,6 +5,7 @@
 #include <iostream>
 #include <chrono>
 #include <algorithm>
+#include <filesystem>
 
 #include "game_main.h"
 #include "VkBootstrap.h"
@@ -12,6 +13,9 @@
 #include "mesh.h"
 #include "file_io.h"
 #include "math_utils.h"
+#include "entity.h"
+
+namespace fs = std::filesystem;
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -65,38 +69,51 @@ void SlopeGame::init()
 
 	renderer.init(vkbInstance, &surface, width, height);
 
-	std::optional<std::vector<std::shared_ptr<MeshAsset>>> models = loadModel("models/monkeyhead.glb");
+	loadAssets();
 
-	for (std::shared_ptr<MeshAsset> asset : models.value())
-	{
-		renderer.uploadMesh(asset.get()->mesh);
-		assets.insert({ "monkeyhead", *asset.get() });
-	}
+	//TextureAsset stone = loadImage("textures/stone.png", "stone");
+	//TextureAsset dirt = loadImage("textures/dirt.png", "dirt");
 
-	std::optional<std::vector<std::shared_ptr<MeshAsset>>> models2 = loadModel("models/cube.glb");
-
-	for (std::shared_ptr<MeshAsset> asset : models2.value())
-	{
-		renderer.uploadMesh(asset.get()->mesh);
-		assets.insert({ "cube", *asset.get() });
-	}
-
-	TextureAsset stone = loadImage("textures/stone.png", "stone");
-	TextureAsset dirt = loadImage("textures/dirt.png", "dirt");
-
-	textures.insert({ "stone", renderer.uploadTexture(stone.data, stone.width, stone.height) });
-	textures.insert({ "dirt", renderer.uploadTexture(dirt.data, dirt.width, dirt.height) });
+	//textures.insert({ "stone", renderer.uploadTexture(stone.data, stone.width, stone.height) });
+	//textures.insert({ "dirt", renderer.uploadTexture(dirt.data, dirt.width, dirt.height) });
 
 	mainScene = loadScene("scenes/testmap.json", assets, textures);
-
-	//MeshInstance instance = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, 2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, stoneIndex};
-	//MeshInstance instance2 = { &assets["monkeyhead"].mesh, {glm::vec3(0.0, -2.0, 0.0), glm::vec3(-90.0f, -90.0f, 0.0f), glm::vec3(1, 1, 1)}, dirtIndex};
-
-	//MeshInstance instance3 = { &assets["cube"].mesh, {glm::vec3(3.0, 0.0, 0.0), glm::vec3(0.0f, 45.0f, 0.0f)}, dirtIndex};	
 
 	cameraTransform.position = glm::vec3(-8.0, 0.0, 0.0);
 
 	previousTime = std::chrono::high_resolution_clock::now();
+
+	
+}
+
+void SlopeGame::loadAssets()
+{
+	//Load Models
+	for (const auto& entry : fs::directory_iterator("models"))
+	{
+		const auto path = entry.path();
+		if (entry.is_regular_file() && path.extension().string().compare("glb"))
+		{
+			std::optional<std::vector<std::shared_ptr<MeshAsset>>> model = loadModel(path);
+			for (std::shared_ptr<MeshAsset> asset : model.value())
+			{
+				renderer.uploadMesh(asset.get()->mesh);
+				assets.insert({ path.filename().stem().string(), *asset.get()});
+			}
+		}
+	}
+
+	//Load Textures
+	for (const auto& entry : fs::directory_iterator("textures"))
+	{
+		const auto path = entry.path();
+		if (entry.is_regular_file() && path.extension().string().compare("png"))
+		{
+			const std::string name = path.filename().stem().string();
+			TextureAsset texture = loadImage(path, name);
+			textures.insert({ name, renderer.uploadTexture(texture.data, texture.width, texture.height) });
+		}
+	}
 }
 
 bool SlopeGame::tick()

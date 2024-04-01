@@ -175,7 +175,7 @@ TextureAsset loadImage(std::filesystem::path filePath, std::string name)
     return asset;
 }
 
-std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, -std::unordered_map<std::string, TextureImage>& textures)
+std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, std::unordered_map<std::string, TextureImage>& textures)
 {
     std::string json = readFile(filePath);
 
