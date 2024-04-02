@@ -1,6 +1,6 @@
 {
   "ent1": {
-    "type": "Entity",
+    "type": "Spinner",
     "mesh": "cube",
     "texture": "dirt",
     "transform": {
