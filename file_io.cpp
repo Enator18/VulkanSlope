@@ -18,6 +18,7 @@
 #include "file_io.h"
 #include "mesh.h"
 #include "entity.h"
+#include "entity_builder.h"
 
 using namespace rapidjson;
 
@@ -186,8 +187,6 @@ std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, s
 
     for (auto& member : document.GetObject())
     {   
-        std::string type = member.value["type"].GetString();
-
         auto& transformValue = member.value["transform"];
 
         Transform transform = {};
@@ -204,8 +203,7 @@ std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, s
         transform.scale.y = transformValue["scale"][1].GetDouble();
         transform.scale.z = transformValue["scale"][2].GetDouble();
 
-        //Will be replaced with dictionary system to select type later
-        std::unique_ptr<Entity> entity = std::make_unique<Entity>();
+        std::unique_ptr<Entity> entity = entityBuilder[member.value["type"].GetString()]();
 
         entity->name = member.name.GetString();
 

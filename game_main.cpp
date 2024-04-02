@@ -71,13 +71,12 @@ void SlopeGame::init()
 
 	loadAssets();
 
-	//TextureAsset stone = loadImage("textures/stone.png", "stone");
-	//TextureAsset dirt = loadImage("textures/dirt.png", "dirt");
-
-	//textures.insert({ "stone", renderer.uploadTexture(stone.data, stone.width, stone.height) });
-	//textures.insert({ "dirt", renderer.uploadTexture(dirt.data, dirt.width, dirt.height) });
-
 	mainScene = loadScene("scenes/testmap.json", assets, textures);
+
+	for (auto& entity : mainScene)
+	{
+		entity->begin();
+	}
 
 	cameraTransform.position = glm::vec3(-8.0, 0.0, 0.0);
 
@@ -131,6 +130,11 @@ bool SlopeGame::tick()
 	float delta = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
 
 	previousTime = currentTime;
+
+	for (auto& entity : mainScene)
+	{
+		entity->tick(delta);
+	}
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);

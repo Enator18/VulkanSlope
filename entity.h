@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <functional>
 
 #include "mesh.h"
 #include "math_utils.h"
@@ -15,10 +14,4 @@ public:
 	std::string name;
 	Transform transform;
 	MeshInstance mesh;
-};
-
-
-struct EntityBuilder
-{
-	std::function<Entity()> buildFunction;
 };
