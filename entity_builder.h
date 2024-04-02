@@ -9,6 +9,6 @@
 
 std::unordered_map<std::string, std::function<std::unique_ptr<Entity>()>> entityBuilder =
 {
-	{"Entity", std::make_unique<Entity>},
-	{"Spinner", std::make_unique<Spinner>}
+	{"Entity", [=]() {return std::make_unique<Entity>(); }},
+	{"Spinner", [=]() {return std::make_unique<Spinner>(); }}
 };
