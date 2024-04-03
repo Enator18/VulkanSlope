@@ -11,6 +11,7 @@
 #include "render_types.h"
 #include "mesh.h"
 #include "file_io.h"
+#include "engine_types.h"
 
 class SlopeGame
 {
@@ -36,7 +37,7 @@ private:
 
 	std::unordered_map<std::string, MeshAsset> assets;
 	std::unordered_map<std::string, TextureImage> textures;
-	std::vector<std::unique_ptr<Entity>> mainScene;
+	Scene mainScene;
 
 	int width = 960;
 	int height = 540;

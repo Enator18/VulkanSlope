@@ -6,6 +6,7 @@
 
 #include "mesh.h"
 #include "entity.h"
+#include "engine_types.h"
 
 struct GeoSurface
 {
@@ -28,11 +29,9 @@ struct TextureAsset
     int width, height;
 
     std::vector<uint32_t> data;
-
-    TextureImage texture;
 };
 
 std::string readFile(std::filesystem::path filePath);
 std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem::path filePath);
 TextureAsset loadImage(std::filesystem::path filePath, std::string name);
-std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, std::unordered_map<std::string, TextureImage>& textures);
+Scene loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, std::unordered_map<std::string, TextureImage>& textures);

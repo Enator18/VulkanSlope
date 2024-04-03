@@ -8,6 +8,7 @@
 #include "vk_mem_alloc.h"
 #include "mesh.h"
 #include "entity.h"
+#include "engine_types.h"
 
 constexpr unsigned int FRAME_OVERLAP = 2;
 constexpr unsigned int MAX_OBJECTS = 10000;
@@ -20,7 +21,7 @@ public:
 	void deleteMesh(Mesh& mesh);
 	TextureImage uploadTexture(std::vector<uint32_t> pixels, uint32_t width, uint32_t height);
 	void deleteTexture(TextureImage& textureImage);
-	void drawFrame(std::vector<std::unique_ptr<Entity>>& scene, Camera camera);
+	void drawFrame(Scene& scene, Camera camera);
 	void onResized(uint32_t width, uint32_t height);
 	void cleanup();
 

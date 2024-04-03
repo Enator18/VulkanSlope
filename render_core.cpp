@@ -473,7 +473,7 @@ void Renderer::deleteTexture(TextureImage& texture)
 }
 
 //Main draw function. Called every frame.
-void Renderer::drawFrame(std::vector<std::unique_ptr<Entity>>& scene, Camera camera)
+void Renderer::drawFrame(Scene& scene, Camera camera)
 {
 	//Set up commands
 	VkCommandBuffer& commandBuffer = getCurrentFrame().commandBuffer;
@@ -534,7 +534,7 @@ void Renderer::drawFrame(std::vector<std::unique_ptr<Entity>>& scene, Camera cam
 
 	std::vector<glm::mat4> transforms;
 
-	for (std::unique_ptr<Entity> &entity : scene)
+	for (std::unique_ptr<Entity> &entity : scene.entities)
 	{
 		transforms.push_back(entity->transform.getTransformMatrix());
 	}
@@ -573,9 +573,9 @@ void Renderer::drawFrame(std::vector<std::unique_ptr<Entity>>& scene, Camera cam
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderPipeline);
 
 	//Main draw loop
-	for (int i = 0; i < scene.size(); i++)
+	for (int i = 0; i < scene.entities.size(); i++)
 	{
-		MeshInstance& instance = scene[i]->mesh;
+		MeshInstance& instance = scene.entities[i]->mesh;
 
 		VkDescriptorSet texDescriptor = getCurrentFrame().descriptorAllocator.allocate(device, textureSetLayout);
 

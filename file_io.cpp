@@ -176,14 +176,14 @@ TextureAsset loadImage(std::filesystem::path filePath, std::string name)
     return asset;
 }
 
-std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, std::unordered_map<std::string, TextureImage>& textures)
+Scene loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, std::unordered_map<std::string, TextureImage>& textures)
 {
     std::string json = readFile(filePath);
 
     Document document;
     document.Parse(json.c_str());
 
-    std::vector<std::unique_ptr<Entity>> scene;
+    Scene scene;
 
     for (auto& member : document.GetObject())
     {   
@@ -211,7 +211,7 @@ std::vector<std::unique_ptr<Entity>> loadScene(std::filesystem::path filePath, s
 
         entity->mesh = { &assets[member.value["mesh"].GetString()].mesh, &textures[member.value["texture"].GetString()], {}};
 
-        scene.push_back(std::move(entity));
+        scene.entities.push_back(std::move(entity));
     }
 
     return scene;

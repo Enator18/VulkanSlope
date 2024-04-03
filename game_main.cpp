@@ -73,7 +73,7 @@ void SlopeGame::init()
 
 	mainScene = loadScene("scenes/testmap.json", assets, textures);
 
-	for (auto& entity : mainScene)
+	for (auto& entity : mainScene.entities)
 	{
 		entity->begin();
 	}
@@ -94,11 +94,8 @@ void SlopeGame::loadAssets()
 		if (entry.is_regular_file() && path.extension().string().compare("glb"))
 		{
 			std::optional<std::vector<std::shared_ptr<MeshAsset>>> model = loadModel(path);
-			for (std::shared_ptr<MeshAsset> asset : model.value())
-			{
-				renderer.uploadMesh(asset.get()->mesh);
-				assets.insert({ path.filename().stem().string(), *asset.get()});
-			}
+			renderer.uploadMesh(model.value()[0].get()->mesh);
+			assets.insert({ path.filename().stem().string(), *model.value()[0].get() });
 		}
 	}
 
@@ -131,7 +128,7 @@ bool SlopeGame::tick()
 
 	previousTime = currentTime;
 
-	for (auto& entity : mainScene)
+	for (auto& entity : mainScene.entities)
 	{
 		entity->tick(delta);
 	}
