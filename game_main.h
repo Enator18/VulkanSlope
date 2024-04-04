@@ -20,6 +20,7 @@ public:
 	void init();
 	bool tick();
 	void cleanup();
+	Scene getCurrentScene();
 private:
 	const float MOUSE_SENSITIVITY = 0.1;
 	const float FLY_SPEED = 2;
@@ -30,8 +31,6 @@ private:
 
 	Mesh triangle;
 	Mesh triangle2;
-
-	Transform cameraTransform;
 
 	Renderer renderer;
 

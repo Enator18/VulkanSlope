@@ -4,6 +4,7 @@
 
 #include "mesh.h"
 #include "math_utils.h"
+#include "engine_types.h"
 
 
 class Entity
@@ -14,4 +15,7 @@ public:
 	std::string name;
 	Transform transform;
 	MeshInstance mesh;
+	SlopeGame* game;
+private:
+	void setCameraTransform(Transform transform);
 };

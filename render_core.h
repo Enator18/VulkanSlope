@@ -21,7 +21,7 @@ public:
 	void deleteMesh(Mesh& mesh);
 	TextureImage uploadTexture(std::vector<uint32_t> pixels, uint32_t width, uint32_t height);
 	void deleteTexture(TextureImage& textureImage);
-	void drawFrame(Scene& scene, Camera camera);
+	void drawFrame(Scene& scene);
 	void onResized(uint32_t width, uint32_t height);
 	void cleanup();
 

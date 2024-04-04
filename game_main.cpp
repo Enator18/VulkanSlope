@@ -75,14 +75,13 @@ void SlopeGame::init()
 
 	for (auto& entity : mainScene.entities)
 	{
+		entity->game = this;
 		entity->begin();
 	}
 
-	cameraTransform.position = glm::vec3(-8.0, 0.0, 0.0);
+	mainScene.cameraTransform.position = glm::vec3(-8.0, 0.0, 0.0);
 
 	previousTime = std::chrono::high_resolution_clock::now();
-
-	
 }
 
 void SlopeGame::loadAssets()
@@ -136,42 +135,42 @@ bool SlopeGame::tick()
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
-	cameraTransform.rotation.x += (mouseY - ypos) * MOUSE_SENSITIVITY;
-	cameraTransform.rotation.y += (mouseX - xpos) * MOUSE_SENSITIVITY;
+	mainScene.cameraTransform.rotation.x += (mouseY - ypos) * MOUSE_SENSITIVITY;
+	mainScene.cameraTransform.rotation.y += (mouseX - xpos) * MOUSE_SENSITIVITY;
 
-	cameraTransform.rotation.x = std::clamp(cameraTransform.rotation.x, -90.0f, 90.0f);
+	mainScene.cameraTransform.rotation.x = std::clamp(mainScene.cameraTransform.rotation.x, -90.0f, 90.0f);
 
 	mouseX = xpos;
 	mouseY = ypos;
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		cameraTransform.position += glm::vec3(glm::vec4(FLY_SPEED * delta, 0.0, 0.0, 1.0) * cameraTransform.getRotationMatrix());
+		mainScene.cameraTransform.position += glm::vec3(glm::vec4(FLY_SPEED * delta, 0.0, 0.0, 1.0) * mainScene.cameraTransform.getRotationMatrix());
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		cameraTransform.position += glm::vec3(glm::vec4(0.0, -FLY_SPEED * delta, 0.0, 1.0) * cameraTransform.getRotationMatrix());
+		mainScene.cameraTransform.position += glm::vec3(glm::vec4(0.0, -FLY_SPEED * delta, 0.0, 1.0) * mainScene.cameraTransform.getRotationMatrix());
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		cameraTransform.position += glm::vec3(glm::vec4(-FLY_SPEED * delta, 0.0, 0.0, 1.0) * cameraTransform.getRotationMatrix());
+		mainScene.cameraTransform.position += glm::vec3(glm::vec4(-FLY_SPEED * delta, 0.0, 0.0, 1.0) * mainScene.cameraTransform.getRotationMatrix());
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		cameraTransform.position += glm::vec3(glm::vec4(0.0, FLY_SPEED * delta, 0.0, 1.0) * cameraTransform.getRotationMatrix());
+		mainScene.cameraTransform.position += glm::vec3(glm::vec4(0.0, FLY_SPEED * delta, 0.0, 1.0) * mainScene.cameraTransform.getRotationMatrix());
 	}
 
-	glm::mat4 view = glm::lookAt(cameraTransform.position, cameraTransform.position + glm::vec3(glm::vec4(1, 0, 0, 1) * cameraTransform.getRotationMatrix()), glm::vec3(glm::vec4(0, 0, 1, 1) * cameraTransform.getRotationMatrix()));
-	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 40.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
-
-	Camera camera = { view, projection };
-
-	renderer.drawFrame(mainScene, camera);
+	renderer.drawFrame(mainScene);
 
 	return !glfwWindowShouldClose(window);
+}
+
+Scene SlopeGame::getCurrentScene()
+{
+	return mainScene;
 }
 
 void SlopeGame::cleanup()

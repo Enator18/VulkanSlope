@@ -473,7 +473,7 @@ void Renderer::deleteTexture(TextureImage& texture)
 }
 
 //Main draw function. Called every frame.
-void Renderer::drawFrame(Scene& scene, Camera camera)
+void Renderer::drawFrame(Scene& scene)
 {
 	//Set up commands
 	VkCommandBuffer& commandBuffer = getCurrentFrame().commandBuffer;
@@ -525,6 +525,11 @@ void Renderer::drawFrame(Scene& scene, Camera camera)
 	renderPassInfo.pClearValues = &clearValues[0];
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	glm::mat4 view = glm::lookAt(scene.cameraTransform.position, scene.cameraTransform.position + glm::vec3(glm::vec4(1, 0, 0, 1) * scene.cameraTransform.getRotationMatrix()), glm::vec3(glm::vec4(0, 0, 1, 1) * scene.cameraTransform.getRotationMatrix()));
+	glm::mat4 projection = glm::rotate(glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 40.0f), glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
+
+	Camera camera = { view, projection };
 
 	//Upload camera and instance matrices to the GPU
 	void* cameraData;
