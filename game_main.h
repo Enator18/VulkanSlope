@@ -12,6 +12,7 @@
 #include "mesh.h"
 #include "file_io.h"
 #include "engine_types.h"
+#include "input.h"
 
 class SlopeGame
 {
@@ -41,6 +42,7 @@ private:
 	int width = 960;
 	int height = 540;
 
+	InputHandler inputHandler = {window};
 
 	double mouseX = 0, mouseY = 0;
 
