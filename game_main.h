@@ -22,10 +22,9 @@ public:
 	bool tick();
 	void cleanup();
 	Scene getCurrentScene();
-private:
-	const float MOUSE_SENSITIVITY = 0.1;
-	const float FLY_SPEED = 2;
 
+	InputHandler inputHandler = { window };
+private:
 	GLFWwindow* window;
 	vkb::Instance vkbInstance;
 	VkSurfaceKHR surface;
@@ -41,8 +40,6 @@ private:
 
 	int width = 960;
 	int height = 540;
-
-	InputHandler inputHandler = {window};
 
 	double mouseX = 0, mouseY = 0;
 

@@ -4,9 +4,9 @@
 
 #include "mesh.h"
 #include "math_utils.h"
-#include "engine_types.h"
 
 
+class SlopeGame;
 class Entity
 {
 public:

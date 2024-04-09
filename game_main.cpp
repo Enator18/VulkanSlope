@@ -113,7 +113,7 @@ void SlopeGame::loadAssets()
 
 bool SlopeGame::tick()
 {
-	glfwPollEvents();
+	inputHandler.update();
 
 	while (width == 0 || height == 0)
 	{
@@ -130,37 +130,6 @@ bool SlopeGame::tick()
 	for (auto& entity : mainScene.entities)
 	{
 		entity->tick(delta);
-	}
-
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-
-	mainScene.cameraTransform.rotation.x += (mouseY - ypos) * MOUSE_SENSITIVITY;
-	mainScene.cameraTransform.rotation.y += (mouseX - xpos) * MOUSE_SENSITIVITY;
-
-	mainScene.cameraTransform.rotation.x = std::clamp(mainScene.cameraTransform.rotation.x, -90.0f, 90.0f);
-
-	mouseX = xpos;
-	mouseY = ypos;
-
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-	{
-		mainScene.cameraTransform.position += glm::vec3(glm::vec4(FLY_SPEED * delta, 0.0, 0.0, 1.0) * mainScene.cameraTransform.getRotationMatrix());
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	{
-		mainScene.cameraTransform.position += glm::vec3(glm::vec4(0.0, -FLY_SPEED * delta, 0.0, 1.0) * mainScene.cameraTransform.getRotationMatrix());
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	{
-		mainScene.cameraTransform.position += glm::vec3(glm::vec4(-FLY_SPEED * delta, 0.0, 0.0, 1.0) * mainScene.cameraTransform.getRotationMatrix());
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	{
-		mainScene.cameraTransform.position += glm::vec3(glm::vec4(0.0, FLY_SPEED * delta, 0.0, 1.0) * mainScene.cameraTransform.getRotationMatrix());
 	}
 
 	renderer.drawFrame(mainScene);
