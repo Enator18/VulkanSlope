@@ -16,6 +16,6 @@ public:
 	Transform transform;
 	MeshInstance mesh;
 	SlopeGame* game;
-private:
+protected:
 	void setCameraTransform(Transform transform);
 };

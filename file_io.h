@@ -34,4 +34,4 @@ struct TextureAsset
 std::string readFile(std::filesystem::path filePath);
 std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadModel(std::filesystem::path filePath);
 TextureAsset loadImage(std::filesystem::path filePath, std::string name);
-Scene loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, std::unordered_map<std::string, TextureImage>& textures);
+void loadScene(Scene& scene, std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, std::unordered_map<std::string, TextureImage>& textures);

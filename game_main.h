@@ -21,9 +21,9 @@ public:
 	void init();
 	bool tick();
 	void cleanup();
-	Scene getCurrentScene();
+	Scene& getCurrentScene();
 
-	InputHandler inputHandler = { window };
+	InputHandler inputHandler = { nullptr };
 private:
 	GLFWwindow* window;
 	vkb::Instance vkbInstance;

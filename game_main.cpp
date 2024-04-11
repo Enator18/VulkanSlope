@@ -41,6 +41,8 @@ void SlopeGame::init()
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	inputHandler = { window };
+
 #ifdef NDEBUG
 	bool validation = false;
 #else
@@ -71,7 +73,7 @@ void SlopeGame::init()
 
 	loadAssets();
 
-	mainScene = loadScene("scenes/testmap.json", assets, textures);
+	loadScene(mainScene, "scenes/testmap.json", assets, textures);
 
 	for (auto& entity : mainScene.entities)
 	{
@@ -137,7 +139,7 @@ bool SlopeGame::tick()
 	return !glfwWindowShouldClose(window);
 }
 
-Scene SlopeGame::getCurrentScene()
+Scene& SlopeGame::getCurrentScene()
 {
 	return mainScene;
 }

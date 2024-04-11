@@ -14,7 +14,7 @@ public:
 private:
 	GLFWwindow* window;
 	std::unordered_map<std::string, int> keybinds;
-	float mouseSensitivity = 0.1;
+	float mouseSensitivity = 0.1f;
 
 	double mouseX1, mouseY1, mouseX2, mouseY2;
 };

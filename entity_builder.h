@@ -6,9 +6,11 @@
 
 #include "entity.h"
 #include "spinner.h"
+#include "player.h"
 
 std::unordered_map<std::string, std::function<std::unique_ptr<Entity>()>> entityBuilder =
 {
 	{"Entity", [=]() {return std::make_unique<Entity>(); }},
-	{"Spinner", [=]() {return std::make_unique<Spinner>(); }}
+	{"Spinner", [=]() {return std::make_unique<Spinner>(); }},
+	{"Player", [=]() {return std::make_unique<Player>(); }}
 };

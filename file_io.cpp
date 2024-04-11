@@ -176,14 +176,12 @@ TextureAsset loadImage(std::filesystem::path filePath, std::string name)
     return asset;
 }
 
-Scene loadScene(std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, std::unordered_map<std::string, TextureImage>& textures)
+void loadScene(Scene& scene, std::filesystem::path filePath, std::unordered_map<std::string, MeshAsset>& assets, std::unordered_map<std::string, TextureImage>& textures)
 {
     std::string json = readFile(filePath);
 
     Document document;
     document.Parse(json.c_str());
-
-    Scene scene;
 
     for (auto& member : document.GetObject())
     {   
@@ -213,7 +211,5 @@ Scene loadScene(std::filesystem::path filePath, std::unordered_map<std::string, 
 
         scene.entities.push_back(std::move(entity));
     }
-
-    return scene;
 }
 

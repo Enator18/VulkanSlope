@@ -5,8 +5,8 @@ void Player::tick(float delta)
 {
 	InputHandler& inputHandler = game->inputHandler;
 
-	transform.rotation.x -= inputHandler.readMouseY();
-	transform.rotation.y -= inputHandler.readMouseX();
+	transform.rotation.x -= (float)inputHandler.readMouseY();
+	transform.rotation.y -= (float)inputHandler.readMouseX();
 
 	transform.rotation.x = std::clamp(transform.rotation.x, -90.0f, 90.0f);
 
@@ -30,5 +30,5 @@ void Player::tick(float delta)
 		transform.position += glm::vec3(glm::vec4(0.0, flySpeed * delta, 0.0, 1.0) * transform.getRotationMatrix());
 	}
 
-	game->getCurrentScene().cameraTransform = transform;
+	setCameraTransform(transform);
 }

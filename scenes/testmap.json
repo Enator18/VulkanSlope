@@ -19,5 +19,16 @@
       "rotation": [ -90.0, -90.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ]
     }
+  },
+
+  "player": {
+    "type": "Player",
+    "mesh": "cube",
+    "texture": "stone",
+    "transform": {
+      "position": [ -8.0, 0.0, 0.0 ],
+      "rotation": [ 0.0, 0.0, 0.0 ],
+      "scale": [ 1.0, 1.0, 1.0 ]
+    }
   }
 }
