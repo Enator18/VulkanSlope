@@ -10,5 +10,6 @@ layout(set = 1, binding = 0) uniform sampler2D mainTexture;
 
 void main()
 {
-	outFragColor = ((vec4(vec3(dot(fragNormal,vec3(-0.5, 1.0, 1.0))), 1.0) * 0.4) + 0.5) * texture(mainTexture, fragTexCoord);
+	//outFragColor = ((vec4(vec3(dot(fragNormal,vec3(-0.5, 1.0, 1.0))), 1.0) * 0.4) + 0.5) * texture(mainTexture, fragTexCoord * 4.0);
+	outFragColor = texture(mainTexture, fragTexCoord * 4.0);
 }
