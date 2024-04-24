@@ -1,10 +1,10 @@
 {
-  "ent1": {
-    "type": "Entity",
+  "ball": {
+    "type": "Ball",
     "mesh": "ball",
     "texture": "greengrid",
     "transform": {
-      "position": [ 0.0, 5.0, 0.0 ],
+      "position": [ 0.0, 0.0, 0.0 ],
       "rotation": [ 0.0, 0.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ]
     }
@@ -21,14 +21,14 @@
     }
   },
 
-  "player": {
-    "type": "Player",
+  "box": {
+    "type": "Entity",
     "mesh": "cube",
-    "texture": "stone",
+    "texture": "terminator",
     "transform": {
-      "position": [ -8.0, 0.0, 0.0 ],
+      "position": [ 8.0, 0.0, -8.0 ],
       "rotation": [ 0.0, 0.0, 0.0 ],
-      "scale": [ 1.0, 1.0, 1.0 ]
+      "scale": [2.0, 2.0, 0.5]
     }
   }
 }
