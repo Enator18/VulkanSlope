@@ -7,8 +7,8 @@ void Ball::tick(float delta)
 {
 	transform.rotation.x += 180 * delta;
 
-	transform.position.x += 6 * delta;
-	transform.position.z -= 6 * delta;
+	transform.position.x += cos(22.5 * 3.14159 / 180) * rollSpeed * delta;
+	transform.position.z -= sin(22.5 * 3.14159 / 180) * rollSpeed * delta;
 
 	Transform cameraTransform;
 	cameraTransform.position = transform.position;
